@@ -67,7 +67,7 @@ BloodHorn does not release pre-built binaries. This is to ensure maximum securit
 
 See INSTALL.md and USAGE.md for build and usage instructions.
 
-#### *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun !.*
+#### *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun and to be used in my future operating systems!.*
 ## License
 MIT
 
