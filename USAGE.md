@@ -1,5 +1,43 @@
 # BloodHorn Usage Guide
 
+## Post-Build Usage
+
+After building BloodHorn (see INSTALL.md for build instructions), you can use the bootloader as follows:
+
+### 1. Install the Binary
+- For UEFI: Copy `build/BloodHorn.efi` to your EFI system partition (e.g., `/boot/efi/EFI/BloodHorn/BloodHorn.efi`).
+- For BIOS: Write `build/bios/bootsector.bin` and `build/bios/stage2.bin` to your disk's MBR and next sector.
+- For ISO/USB: Write `iso/BloodHorn.iso` to a USB drive or CD.
+
+### 2. Configure the Bootloader
+- Place `bloodhorn.ini` or `bloodhorn.json` in the root of your boot partition (e.g., `/boot/`, `/mnt/usb/`, or EFI partition root).
+- You can customize:
+  - Boot entries (kernel, initrd, cmdline)
+  - Menu timeout and default entry
+  - Theme (colors, background image)
+  - Language (UI localization)
+- See CONFIG.md for all options and examples.
+
+### 3. Booting
+- Reboot your machine and select BloodHorn from the UEFI/BIOS boot menu.
+- The graphical menu will appear. Use:
+  - **Arrow keys** to navigate
+  - **Enter** to boot the selected entry
+  - **ESC** to exit to firmware
+  - **Mouse** to select entries (if supported)
+  - **Hotkeys** to jump to entries
+- The menu will use your configured theme, language, and background image.
+
+### 4. Advanced Usage
+- Use the recovery shell for troubleshooting.
+- Use Lua scripting and plugins for advanced boot logic.
+- Chainload other bootloaders or operating systems.
+- Boot over network (PXE/HTTP).
+
+---
+
+# BloodHorn Usage Guide
+
 This guide explains how to use BloodHorn bootloader with different operating systems and custom kernels.
 
 ## Table of Contents

@@ -101,6 +101,53 @@ EFI_STATUS boot_aarch64_wrapper(void);
 EFI_STATUS boot_riscv64_wrapper(void);
 EFI_STATUS boot_loongarch64_wrapper(void);
 
+// Helper: load theme and language from config 
+static void LoadThemeAndLanguageFromConfig() {
+    struct BootMenuTheme theme = {0};
+    char lang[8] = "en";
+    FILE* f = fopen("bloodhorn.ini", "r");
+    if (f) {
+        char line[256];
+        while (fgets(line, sizeof(line), f)) {
+            if (strstr(line, "theme_background_color")) sscanf(line, "%*[^=]=%x", &theme.background_color);
+            if (strstr(line, "theme_header_color")) sscanf(line, "%*[^=]=%x", &theme.header_color);
+            if (strstr(line, "theme_highlight_color")) sscanf(line, "%*[^=]=%x", &theme.highlight_color);
+            if (strstr(line, "theme_text_color")) sscanf(line, "%*[^=]=%x", &theme.text_color);
+            if (strstr(line, "theme_selected_text_color")) sscanf(line, "%*[^=]=%x", &theme.selected_text_color);
+            if (strstr(line, "theme_footer_color")) sscanf(line, "%*[^=]=%x", &theme.footer_color);
+            if (strstr(line, "theme_background_image")) {
+                char imgfile[128];
+                sscanf(line, "%*[^=]=%s", imgfile);
+                theme.background_image = LoadImageFile(imgfile);
+            }
+            if (strstr(line, "language")) sscanf(line, "%*[^=]=%7s", lang);
+        }
+        fclose(f);
+    } else {
+        f = fopen("bloodhorn.json", "r");
+        if (f) {
+            char json[4096];
+            size_t len = fread(json, 1, sizeof(json)-1, f);
+            json[len] = 0;
+            struct config_json entries[64];
+            int count = config_json_parse(json, entries, 64);
+            for (int i = 0; i < count; ++i) {
+                if (strcmp(entries[i].key, "theme.background_color") == 0) theme.background_color = (uint32_t)strtoul(entries[i].value, NULL, 16);
+                if (strcmp(entries[i].key, "theme.header_color") == 0) theme.header_color = (uint32_t)strtoul(entries[i].value, NULL, 16);
+                if (strcmp(entries[i].key, "theme.highlight_color") == 0) theme.highlight_color = (uint32_t)strtoul(entries[i].value, NULL, 16);
+                if (strcmp(entries[i].key, "theme.text_color") == 0) theme.text_color = (uint32_t)strtoul(entries[i].value, NULL, 16);
+                if (strcmp(entries[i].key, "theme.selected_text_color") == 0) theme.selected_text_color = (uint32_t)strtoul(entries[i].value, NULL, 16);
+                if (strcmp(entries[i].key, "theme.footer_color") == 0) theme.footer_color = (uint32_t)strtoul(entries[i].value, NULL, 16);
+                if (strcmp(entries[i].key, "theme.background_image") == 0) theme.background_image = LoadImageFile(entries[i].value);
+                if (strcmp(entries[i].key, "language") == 0) strncpy(lang, entries[i].value, 7);
+            }
+            fclose(f);
+        }
+    }
+    SetBootMenuTheme(&theme);
+    SetLanguage(lang);
+}
+
 EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
     EFI_STATUS Status;
     EFI_LOADED_IMAGE_PROTOCOL *LoadedImage = NULL;
@@ -119,18 +166,8 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syste
     gST->ConOut->SetMode(gST->ConOut, 0);
     gST->ConOut->ClearScreen(gST->ConOut);
 
-    // Set theme, language, and initialize mouse
-    struct BootMenuTheme dark_theme = {
-        .background_color = 0x1A1A2E,
-        .header_color = 0x2D2D4F,
-        .highlight_color = 0x4A4A8A,
-        .text_color = 0xCCCCCC,
-        .selected_text_color = 0xFFFFFF,
-        .footer_color = 0x8888AA,
-        .background_image = NULL
-    };
-    SetBootMenuTheme(&dark_theme);
-    SetLanguage("en");
+    // Load theme and language from config
+    LoadThemeAndLanguageFromConfig();
     InitMouse();
 
     // Add boot menu entries with full architecture support

@@ -7,9 +7,17 @@
 #include "theme.h"
 #include "localization.h"
 #include "mouse.h"
+#include <wchar.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include "../config/config_ini.h"
+#include "../config/config_json.h"
+#include "../config/config_env.h"
 
-#define MAX_BOOT_ENTRIES 10
+#define MAX_BOOT_ENTRIES 128
 #define MAX_ENTRY_LENGTH 64
+#define VISIBLE_MENU_ENTRIES 10
 
 // Boot menu entry structure
 typedef struct {
@@ -21,6 +29,43 @@ typedef struct {
 static BOOT_MENU_ENTRY BootEntries[MAX_BOOT_ENTRIES];
 static UINTN BootEntryCount = 0;
 static INTN SelectedEntry = 0;
+static INTN MenuScrollOffset = 0;
+
+// Hotkey mapping
+static wchar_t BootEntryHotkeys[MAX_BOOT_ENTRIES];
+
+// Helper: assign hotkeys (first unique letter)
+static void AssignHotkeys() {
+    bool used[256] = {0};
+    for (UINTN i = 0; i < BootEntryCount; ++i) {
+        const wchar_t* name = BootEntries[i].Name;
+        for (int j = 0; name[j]; ++j) {
+            wchar_t c = towlower(name[j]);
+            if (c >= 32 && c < 128 && !used[c]) {
+                BootEntryHotkeys[i] = c;
+                used[c] = true;
+                break;
+            }
+        }
+        if (!BootEntryHotkeys[i]) BootEntryHotkeys[i] = 0;
+    }
+}
+
+// Helper: load external localization file
+static void LoadLocalizationFile(const char* lang_code) {
+    char filename[64];
+    snprintf(filename, sizeof(filename), "lang_%s.txt", lang_code);
+    FILE* f = fopen(filename, "r");
+    if (!f) return;
+    char line[256];
+    while (fgets(line, sizeof(line), f)) {
+        char key[64]; wchar_t value[256];
+        if (sscanf(line, "%63[^=]=%255ls", key, value) == 2) {
+            AddLocalizedString(key, value);
+        }
+    }
+    fclose(f);
+}
 
 /**
   Adds a new boot menu entry.
@@ -59,65 +104,48 @@ AddBootEntry(
 **/
 VOID
 DrawBootMenu() {
-    // Clear the screen with a dark background
-    ClearScreen(0x1A1A2E);
-    
-    // Draw title
+    const struct BootMenuTheme* theme = GetBootMenuTheme();
+    if (theme->background_image) {
+        DrawImage(theme->background_image, 0, 0);
+    } else {
+        ClearScreen(theme->background_color);
+    }
     INT32 ScreenWidth = GraphicsOutput->Mode->Info->HorizontalResolution;
     INT32 ScreenHeight = GraphicsOutput->Mode->Info->VerticalResolution;
-    
-    // Draw header
-    DrawRect(0, 0, ScreenWidth, 60, 0x2D2D4F);
-    
-    // Draw menu background
+    DrawRect(0, 0, ScreenWidth, 60, theme->header_color);
     INT32 MenuX = ScreenWidth / 4;
     INT32 MenuY = 100;
     INT32 MenuWidth = ScreenWidth / 2;
-    INT32 MenuHeight = (BootEntryCount * 50) + 40;
-    
-    DrawRect(MenuX, MenuY, MenuWidth, MenuHeight, 0x2D2D4F);
-    
-    // Draw menu title
+    INT32 MenuHeight = (VISIBLE_MENU_ENTRIES * 50) + 40;
+    DrawRect(MenuX, MenuY, MenuWidth, MenuHeight, theme->header_color);
     INT32 TextX = MenuX + 20;
     INT32 TextY = MenuY + 20;
-    
-    // Draw menu items
-    for (UINTN i = 0; i < BootEntryCount; i++) {
-        // Highlight the selected entry
+    const wchar_t* menu_title = GetLocalizedString("menu_title");
+    PrintXY((ScreenWidth - StrLen(menu_title) * 10) / 2, 30, theme->selected_text_color, theme->header_color, L"%s", menu_title);
+    // Draw visible entries
+    for (UINTN i = MenuScrollOffset; i < BootEntryCount && i < MenuScrollOffset + VISIBLE_MENU_ENTRIES; i++) {
         if (i == (UINTN)SelectedEntry) {
-            DrawRect(
-                MenuX + 10,
-                TextY - 5,
-                MenuWidth - 20,
-                40,
-                0x4A4A8A
-            );
+            DrawRect(MenuX + 10, TextY - 5, MenuWidth - 20, 40, theme->highlight_color);
         }
-        
-        // Draw the entry text
-        PrintXY(
-            TextX,
-            TextY,
-            (i == (UINTN)SelectedEntry) ? 0xFFFFFF : 0xCCCCCC,
-            0x00000000,
-            L"%s",
-            BootEntries[i].Name
-        );
-        
+        wchar_t entry_label[MAX_ENTRY_LENGTH+8];
+        if (BootEntryHotkeys[i]) {
+            swprintf(entry_label, sizeof(entry_label)/sizeof(wchar_t), L"(%c) %s", BootEntryHotkeys[i], BootEntries[i].Name);
+        } else {
+            swprintf(entry_label, sizeof(entry_label)/sizeof(wchar_t), L"%s", BootEntries[i].Name);
+        }
+        PrintXY(TextX, TextY, (i == (UINTN)SelectedEntry) ? theme->selected_text_color : theme->text_color, 0x00000000, L"%s", entry_label);
         TextY += 50;
     }
-    
-    // Draw footer with instructions
-    CHAR16 *Instructions = L"↑/↓: Select  Enter: Boot  ESC: Exit";
-    UINTN InstructionsWidth = StrLen(Instructions) * 10; // Approximate width
-    PrintXY(
-        (ScreenWidth - InstructionsWidth) / 2,
-        MenuY + MenuHeight + 20,
-        0x8888AA,
-        0x00000000,
-        L"%s",
-        Instructions
-    );
+    // Up/down arrows if needed
+    if (MenuScrollOffset > 0) {
+        PrintXY(MenuX + MenuWidth - 40, MenuY + 10, theme->footer_color, 0x00000000, L"↑");
+    }
+    if (MenuScrollOffset + VISIBLE_MENU_ENTRIES < BootEntryCount) {
+        PrintXY(MenuX + MenuWidth - 40, MenuY + MenuHeight - 30, theme->footer_color, 0x00000000, L"↓");
+    }
+    const wchar_t* instructions = GetLocalizedString("instructions");
+    UINTN InstructionsWidth = StrLen(instructions) * 10;
+    PrintXY((ScreenWidth - InstructionsWidth) / 2, MenuY + MenuHeight + 20, theme->footer_color, 0x00000000, L"%s", instructions);
 }
 
 /**
@@ -132,96 +160,101 @@ ShowBootMenu() {
     EFI_EVENT WaitList[1];
     UINTN WaitIndex;
     EFI_INPUT_KEY Key;
-    
-    // Initialize graphics if available
+    struct MouseState mouse = {0};
+    // LoadThemeAndLanguageFromConfig(); // removed, now in main.c
+    LoadLocalizationFile("en"); // TODO: use selected lang
+    AssignHotkeys();
     Status = InitializeGraphics();
     if (EFI_ERROR(Status)) {
-        // Fall back to text mode
         gST->ConOut->ClearScreen(gST->ConOut);
     }
-    
-    // Add default boot entries if none were added
     if (BootEntryCount == 0) {
         AddBootEntry(L"Exit to UEFI Firmware", NULL);
     }
-    
-    // Use theme for all colors
     const struct BootMenuTheme* theme = GetBootMenuTheme();
-
-    // In DrawBootMenu, use theme->background_color, etc. for all DrawRect/PrintXY calls
-    // If theme->background_image != NULL, draw it as the background
-    // Add scrollable menu logic: if BootEntryCount > 10, only show 10 at a time, with up/down arrows
-    // Add mouse support: highlight entry under mouse, select on click
-    // Add localization: use GetLocalizedString for all menu text
-    // Add hotkey support: allow user to press a key to jump to a menu entry
-    
-    // Main menu loop
+    InitMouse();
     while (TRUE) {
-        // Draw the menu
         if (!EFI_ERROR(Status)) {
             DrawBootMenu();
         } else {
-            // Text mode fallback
             gST->ConOut->ClearScreen(gST->ConOut);
             Print(L"\r\n  BloodHorn Boot Menu\r\n\r\n");
-            
             for (UINTN i = 0; i < BootEntryCount; i++) {
-                Print(L"  %c %s\r\n", 
-                    (i == (UINTN)SelectedEntry) ? '>' : ' ', 
-                    BootEntries[i].Name);
+                Print(L"  %c %s\r\n", (i == (UINTN)SelectedEntry) ? '>' : ' ', BootEntries[i].Name);
             }
-            
             Print(L"\r\n  Use arrow keys to select, Enter to boot, ESC to exit");
         }
-        
-        // Wait for key press
+        // Mouse support
+        GetMouseState(&mouse);
+        INT32 MenuX = GraphicsOutput->Mode->Info->HorizontalResolution / 4;
+        INT32 MenuY = 100;
+        INT32 MenuWidth = GraphicsOutput->Mode->Info->HorizontalResolution / 2;
+        INT32 TextX = MenuX + 20;
+        INT32 TextY = MenuY + 20;
+        for (UINTN i = MenuScrollOffset; i < BootEntryCount && i < MenuScrollOffset + VISIBLE_MENU_ENTRIES; i++) {
+            INT32 entryY = TextY + (i - MenuScrollOffset) * 50;
+            if (mouse.x >= TextX && mouse.x < TextX + MenuWidth - 40 && mouse.y >= entryY && mouse.y < entryY + 40) {
+                SelectedEntry = i;
+                if (mouse.left_button) {
+                    if (BootEntries[SelectedEntry].BootFunction != NULL) {
+                        return BootEntries[SelectedEntry].BootFunction();
+                    }
+                    return EFI_SUCCESS;
+                }
+            }
+        }
+        // Wait for key or mouse event
         WaitList[0] = gST->ConIn->WaitForKey;
         Status = gBS->WaitForEvent(1, WaitList, &WaitIndex);
         if (EFI_ERROR(Status)) {
             continue;
         }
-        
-        // Read the key
         Status = gST->ConIn->ReadKeyStroke(gST->ConIn, &Key);
         if (EFI_ERROR(Status)) {
             continue;
         }
-        
-        // Handle key press
+        // Hotkey support
+        if (Key.UnicodeChar) {
+            wchar_t c = towlower(Key.UnicodeChar);
+            for (UINTN i = 0; i < BootEntryCount; ++i) {
+                if (BootEntryHotkeys[i] == c) {
+                    SelectedEntry = i;
+                    break;
+                }
+            }
+        }
         switch (Key.UnicodeChar) {
             case CHAR_CARRIAGE_RETURN:
-                // Enter key - boot the selected entry
                 if (BootEntries[SelectedEntry].BootFunction != NULL) {
                     return BootEntries[SelectedEntry].BootFunction();
                 }
                 return EFI_SUCCESS;
-                
             case 0:
-                // Special key
                 switch (Key.ScanCode) {
                     case SCAN_UP:
                         if (SelectedEntry > 0) {
                             SelectedEntry--;
+                            if (SelectedEntry < MenuScrollOffset) MenuScrollOffset--;
                         } else {
                             SelectedEntry = BootEntryCount - 1;
+                            MenuScrollOffset = (BootEntryCount > VISIBLE_MENU_ENTRIES) ? BootEntryCount - VISIBLE_MENU_ENTRIES : 0;
                         }
                         break;
-                        
                     case SCAN_DOWN:
                         if ((UINTN)SelectedEntry < BootEntryCount - 1) {
                             SelectedEntry++;
+                            if (SelectedEntry >= MenuScrollOffset + VISIBLE_MENU_ENTRIES) MenuScrollOffset++;
                         } else {
                             SelectedEntry = 0;
+                            MenuScrollOffset = 0;
                         }
                         break;
-                        
                     case SCAN_ESC:
                         return EFI_ABORTED;
                 }
                 break;
         }
     }
-    
     return EFI_SUCCESS;
 }
 

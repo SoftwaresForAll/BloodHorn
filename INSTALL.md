@@ -359,25 +359,44 @@ sudo reboot
 
 ### Basic Configuration
 
-```bash
-# Create configuration file
-sudo tee /boot/bloodhorn.ini << EOF
+You can customize the boot menu appearance and language using INI or JSON config files. Place `bloodhorn.ini` or `bloodhorn.json` in the root of your boot partition (e.g., `/boot/`, `/mnt/usb/`, or EFI partition root).
+
+#### Example INI:
+```
 [theme]
 background_color=0x1A1A2E
+header_color=0x2D2D4F
+highlight_color=0x4A4A8A
 text_color=0xCCCCCC
+selected_text_color=0xFFFFFF
+footer_color=0x8888AA
+background_image=myimage.bmp
 
-[menu]
-timeout=10
-default_entry=0
-
-[entry:0]
-title=Ubuntu 22.04
-type=kernel
-kernel=/boot/vmlinuz-5.15.0-generic
-initrd=/boot/initrd.img-5.15.0-generic
-cmdline=root=/dev/sda1 ro
-EOF
+[localization]
+language=en
 ```
+
+#### Example JSON:
+```
+{
+  "theme": {
+    "background_color": "0x1A1A2E",
+    "header_color": "0x2D2D4F",
+    "highlight_color": "0x4A4A8A",
+    "text_color": "0xCCCCCC",
+    "selected_text_color": "0xFFFFFF",
+    "footer_color": "0x8888AA",
+    "background_image": "myimage.bmp"
+  },
+  "localization": {
+    "language": "en"
+  }
+}
+```
+
+- Supported image formats for `background_image` depend on your build (BMP recommended).
+- For localization, you can add external language files (e.g., `lang_en.txt`).
+- If both INI and JSON exist, INI takes precedence.
 
 ### Advanced Configuration
 

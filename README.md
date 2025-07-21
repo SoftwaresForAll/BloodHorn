@@ -1,6 +1,5 @@
 # BloodHorn Bootloader
-   BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and multiple CPU 
-   architectures.
+BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and multiple CPU architectures.
 
 ---
 ## Donations and community support
@@ -8,9 +7,6 @@
 #### If you intend to support me, you can do so by donating. Even the smallest donation can make a difference.
 
 [![Donate](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/Listedroot/donate)
-
-
-
 
 ## Features
 - Linux boot
@@ -28,7 +24,7 @@
 - HMAC
 - Secure boot
 - Entropy source
-- Graphical menu
+- Graphical menu (theming, background image, localization)
 - Mouse support
 - Lua scripting
 - Recovery shell
@@ -53,13 +49,25 @@
 
 ## Configuration
 - INI, JSON, and environment variable support
-- See CONFIG.md for details
+- Theme and language options (see CONFIG.md)
+- Place config files in the root of the boot partition
 
 ## Quick Start
 ```
 make
 make test
 ```
- ####   *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun !.*
+
+## Why We Don't Provide Binaries
+BloodHorn does not release pre-built binaries. This is to ensure maximum security, transparency, and trust:
+- Building from source guarantees you know exactly what code is running on your system.
+- Bootloaders are highly security-sensitive; you should always verify and build your own binary.
+- Different systems and firmware may require different build options or configurations.
+- This approach encourages review, customization, and community contributions.
+
+See INSTALL.md and USAGE.md for build and usage instructions.
+
+#### *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun !.*
 ## License
 MIT
+
