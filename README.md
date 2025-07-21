@@ -1,4 +1,10 @@
-# BloodHorn Bootloader
+# BloodHorn
+<p align="center">
+  <img src="Zeak.png" alt="Project Logo" width="200">
+</p>
+
+
+
 BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and multiple CPU architectures.
 
 ---
