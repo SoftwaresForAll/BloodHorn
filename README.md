@@ -49,7 +49,7 @@ BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and m
 - Linux
 - Multiboot 1
 - Multiboot 2
-- Limine
+- [Limine](https://github.com/limine-bootloader/limine-protocol/blob/trunk/PROTOCOL.md)
 - Chainloading
 - PXE
 
