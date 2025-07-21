@@ -21,12 +21,20 @@
 - PXE network boot
 - FAT32
 - ext2
+- ISO9660
 - SHA256
 - RSA
+- AES
+- HMAC
+- Secure boot
+- Entropy source
 - Graphical menu
 - Mouse support
 - Lua scripting
 - Recovery shell
+- Plugin system
+- Modular network stack (DHCP, TFTP, ARP)
+- Modular filesystem stack
 
 ## Architectures
 - IA-32 (x86)
@@ -42,6 +50,10 @@
 - Limine
 - Chainloading
 - PXE
+
+## Configuration
+- INI, JSON, and environment variable support
+- See CONFIG.md for details
 
 ## Quick Start
 ```
