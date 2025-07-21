@@ -1,0 +1,111 @@
+## @file
+#  BloodHorn Bootloader - Main Application
+#
+#  Copyright (c) 2025 . Listedroot. All rights reserved.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = BloodHorn
+  FILE_GUID                      = 1E8B1D5A-7F5D-4A3E-8D1B-5D9F1C1E8B1D
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = UefiMain
+  UNLOAD_IMAGE                   = BloodHornUnload
+
+[Sources]
+  src/main.c
+  src/uefi/uefi.c
+  src/uefi/graphics.c
+  src/boot/menu.c
+  src/boot/secure.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  CryptoPkg/CryptoPkg.dec
+  SecurityPkg/SecurityPkg.dec
+  FatPkg/FatPkg.dec
+
+[LibraryClasses]
+  # Basic Libraries
+  BaseLib
+  BaseMemoryLib
+  DebugLib
+  DebugPrintErrorLevelLib
+  MemoryAllocationLib
+  PcdLib
+  PrintLib
+  UefiLib
+  UefiApplicationEntryPoint
+  UefiBootServicesTableLib
+  UefiRuntimeServicesTableLib
+  
+  # Additional Libraries
+  FileHandleLib
+  DevicePathLib
+  
+  # Cryptographic Libraries for Secure Boot
+  BaseCryptLib
+  TpmMeasurementLib
+  AuthVariableLib
+  
+  # Graphics Libraries
+  FrameBufferBltLib
+
+[Guids]
+  gEfiFileInfoGuid
+  gEfiFileSystemInfoGuid
+  gEfiFileSystemVolumeLabelInfoIdGuid
+  gEfiGlobalVariableGuid
+  gEfiGraphicsOutputProtocolGuid
+  gEfiHiiPlatformSetupFormsetGuid
+  gEfiIfrTianoGuid
+  gEfiMdePkgTokenSpaceGuid
+  gEfiSmbiosTableGuid
+  gEfiSmbios3TableGuid
+
+[Protocols]
+  gEfiBlockIoProtocolGuid
+  gEfiDiskIoProtocolGuid
+  gEfiDiskIo2ProtocolGuid
+  gEfiSimpleFileSystemProtocolGuid
+  gEfiLoadedImageProtocolGuid
+  gEfiDevicePathProtocolGuid
+  gEfiGraphicsOutputProtocolGuid
+  gEfiHiiFontProtocolGuid
+  gEfiHiiStringProtocolGuid
+  gEfiHiiImageProtocolGuid
+  gEfiHiiConfigRoutingProtocolGuid
+  gEfiHiiConfigAccessProtocolGuid
+  gEfiHiiPackageListProtocolGuid
+  gEfiHiiDatabaseProtocolGuid
+
+[Depex]
+  gEfiDevicePathProtocolGuid AND
+  gEfiLoadedImageProtocolGuid AND
+  gEfiSimpleFileSystemProtocolGuid
+
+[BuildOptions]
+  MSFT:*_*_*_CC_FLAGS = /D DISABLE_NEW_DEPRECATED_INTERFACES
+  GCC:*_*_*_CC_FLAGS = -D DISABLE_NEW_DEPRECATED_INTERFACES
+  INTEL:*_*_*_CC_FLAGS = /D DISABLE_NEW_DEPRECATED_INTERFACES
+
+  MSFT:*_*_X64_CC_FLAGS = /D MDEPKG_NDEBUG
+  GCC:*_*_X64_CC_FLAGS = -D MDEPKG_NDEBUG
+  INTEL:*_*_X64_CC_FLAGS = /D MDEPKG_NDEBUG
+
+  MSFT:*_*_X64_DLINK_FLAGS = /EXPORT:InitializeDriver=
+  GCC:*_*_X64_DLINK_FLAGS = -Wl,--entry,InitializeDriver= -Wl,--no-undefined
+  INTEL:*_*_X64_DLINK_FLAGS = /EXPORT:InitializeDriver=
+
+  MSFT:RELEASE_*_*_CC_FLAGS = /D MDEPKG_NDEBUG /O1 /GL
+  GCC:RELEASE_*_*_CC_FLAGS = -D MDEPKG_NDEBUG -Os -flto
+  INTEL:RELEASE_*_*_CC_FLAGS = /D MDEPKG_NDEBUG /O1
+
+  MSFT:RELEASE_*_*_DLINK_FLAGS = /OPT:REF /OPT:ICF=10 /MAP /ALIGN:4096
+  GCC:RELEASE_*_*_DLINK_FLAGS = -Wl,--as-needed -Wl,--gc-sections
+  INTEL:RELEASE_*_*_DLINK_FLAGS = /OPT:REF /OPT:ICF=10 /MAP /ALIGN:4096

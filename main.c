@@ -1,0 +1,171 @@
+#include <Uefi.h>
+#include <Library/UefiLib.h>
+#include <Library/UefiBootServicesTableLib.h>
+#include <Library/UefiRuntimeServicesTableLib.h>
+#include <Library/BaseMemoryLib.h>
+#include <Library/MemoryAllocationLib.h>
+#include <Protocol/LoadedImage.h>
+#include <Protocol/GraphicsOutput.h>
+#include <Protocol/SimpleFileSystem.h>
+#include <Protocol/DevicePath.h>
+#include "boot/menu.h"
+#include "boot/theme.h"
+#include "boot/localization.h"
+#include "boot/mouse.h"
+#include "boot/secure.h"
+#include "fs/fat32.h"
+#include "security/crypto.h"
+#include "scripting/lua.h"
+#include "recovery/shell.h"
+#include "plugins/plugin.h"
+#include "net/pxe.h"
+#include "boot/Arch32/linux.h"
+#include "boot/Arch32/limine.h"
+#include "boot/Arch32/multiboot1.h"
+#include "boot/Arch32/multiboot2.h"
+#include "boot/Arch32/chainload.h"
+#include "boot/Arch32/ia32.h"
+#include "boot/Arch32/x86_64.h"
+#include "boot/Arch32/aarch64.h"
+#include "boot/Arch32/riscv64.h"
+#include "boot/Arch32/loongarch64.h"
+
+// Function declarations for boot wrappers
+EFI_STATUS boot_linux_kernel_wrapper(void);
+EFI_STATUS boot_multiboot2_kernel_wrapper(void);
+EFI_STATUS boot_limine_kernel_wrapper(void);
+EFI_STATUS boot_chainload_wrapper(void);
+EFI_STATUS boot_pxe_network_wrapper(void);
+EFI_STATUS boot_recovery_shell_wrapper(void);
+EFI_STATUS boot_uefi_shell_wrapper(void);
+EFI_STATUS exit_to_firmware_wrapper(void);
+EFI_STATUS boot_ia32_wrapper(void);
+EFI_STATUS boot_x86_64_wrapper(void);
+EFI_STATUS boot_aarch64_wrapper(void);
+EFI_STATUS boot_riscv64_wrapper(void);
+EFI_STATUS boot_loongarch64_wrapper(void);
+
+EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
+    EFI_STATUS Status;
+    EFI_LOADED_IMAGE_PROTOCOL *LoadedImage = NULL;
+    EFI_GRAPHICS_OUTPUT_PROTOCOL *GraphicsOutput = NULL;
+
+    gST = SystemTable;
+    gBS = SystemTable->BootServices;
+    gRT = SystemTable->RuntimeServices;
+
+    Status = gBS->HandleProtocol(ImageHandle, &gEfiLoadedImageProtocolGuid, (VOID **)&LoadedImage);
+    if (EFI_ERROR(Status)) return Status;
+
+    Status = gBS->LocateProtocol(&gEfiGraphicsOutputProtocolGuid, NULL, (VOID **)&GraphicsOutput);
+
+    gST->ConOut->Reset(gST->ConOut, FALSE);
+    gST->ConOut->SetMode(gST->ConOut, 0);
+    gST->ConOut->ClearScreen(gST->ConOut);
+
+    // Set theme, language, and initialize mouse
+    struct BootMenuTheme dark_theme = {
+        .background_color = 0x1A1A2E,
+        .header_color = 0x2D2D4F,
+        .highlight_color = 0x4A4A8A,
+        .text_color = 0xCCCCCC,
+        .selected_text_color = 0xFFFFFF,
+        .footer_color = 0x8888AA,
+        .background_image = NULL
+    };
+    SetBootMenuTheme(&dark_theme);
+    SetLanguage("en");
+    InitMouse();
+
+    // Add boot menu entries with full architecture support
+    AddBootEntry(L"Linux Kernel", boot_linux_kernel_wrapper);
+    AddBootEntry(L"Multiboot2 Kernel", boot_multiboot2_kernel_wrapper);
+    AddBootEntry(L"Limine Kernel", boot_limine_kernel_wrapper);
+    AddBootEntry(L"Chainload Bootloader", boot_chainload_wrapper);
+    AddBootEntry(L"PXE Network Boot", boot_pxe_network_wrapper);
+    AddBootEntry(L"IA-32 (32-bit x86)", boot_ia32_wrapper);
+    AddBootEntry(L"x86-64 (64-bit x86)", boot_x86_64_wrapper);
+    AddBootEntry(L"ARM64 (aarch64)", boot_aarch64_wrapper);
+    AddBootEntry(L"RISC-V 64", boot_riscv64_wrapper);
+    AddBootEntry(L"LoongArch 64", boot_loongarch64_wrapper);
+    AddBootEntry(L"Recovery Shell", boot_recovery_shell_wrapper);
+    AddBootEntry(L"UEFI Shell", boot_uefi_shell_wrapper);
+    AddBootEntry(L"Exit to UEFI Firmware", exit_to_firmware_wrapper);
+
+    // Show the graphical boot menu
+    Status = ShowBootMenu();
+    if (Status == EFI_SUCCESS) {
+        // Here, load and verify the selected kernel (example: kernel.efi)
+        VOID* KernelBuffer = NULL;
+        UINTN KernelSize = 0;
+        Status = LoadAndVerifyKernel(L"kernel.efi", &KernelBuffer, &KernelSize);
+        if (!EFI_ERROR(Status)) {
+            Status = ExecuteKernel(KernelBuffer, KernelSize, NULL);
+            if (!EFI_ERROR(Status)) return EFI_SUCCESS;
+        }
+    }
+
+    // If we get here, no bootable device was found or kernel failed.
+    Print(L"\r\n  No bootable device found or kernel failed.\r\n");
+    Print(L"  Press any key to reboot...");
+    EFI_INPUT_KEY Key;
+    UINTN Index;
+    gBS->WaitForEvent(1, &gST->ConIn->WaitForKey, &Index);
+    gST->ConIn->ReadKeyStroke(gST->ConIn, &Key);
+    gST->RuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
+    return EFI_DEVICE_ERROR;
+}
+
+// Boot wrapper functions for menu integration
+EFI_STATUS boot_linux_kernel_wrapper(void) {
+    return linux_load_kernel("/boot/vmlinuz", "/boot/initrd.img", "root=/dev/sda1 ro");
+}
+
+EFI_STATUS boot_multiboot2_kernel_wrapper(void) {
+    return multiboot2_load_kernel("/boot/vmlinuz-mb2", "root=/dev/sda1 ro");
+}
+
+EFI_STATUS boot_limine_kernel_wrapper(void) {
+    return limine_load_kernel("/boot/vmlinuz-limine", "root=/dev/sda1 ro");
+}
+
+EFI_STATUS boot_chainload_wrapper(void) {
+    return chainload_file("/boot/grub2.bin");
+}
+
+EFI_STATUS boot_pxe_network_wrapper(void) {
+    return pxe_boot_kernel("/boot/vmlinuz", "/boot/initrd.img", "root=/dev/sda1 ro");
+}
+
+EFI_STATUS boot_recovery_shell_wrapper(void) {
+    return shell_start();
+}
+
+EFI_STATUS boot_uefi_shell_wrapper(void) {
+    return gBS->StartImage(ImageHandle, NULL, NULL);
+}
+
+EFI_STATUS exit_to_firmware_wrapper(void) {
+    gST->RuntimeServices->ResetSystem(EfiResetCold, EFI_SUCCESS, 0, NULL);
+    return EFI_SUCCESS;
+}
+
+EFI_STATUS boot_ia32_wrapper(void) {
+    return ia32_load_kernel("/boot/vmlinuz-ia32", "/boot/initrd-ia32.img", "root=/dev/sda1 ro");
+}
+
+EFI_STATUS boot_x86_64_wrapper(void) {
+    return x86_64_load_kernel("/boot/vmlinuz-x86_64", "/boot/initrd-x86_64.img", "root=/dev/sda1 ro");
+}
+
+EFI_STATUS boot_aarch64_wrapper(void) {
+    return aarch64_load_kernel("/boot/Image-aarch64", "/boot/initrd-aarch64.img", "root=/dev/sda1 ro");
+}
+
+EFI_STATUS boot_riscv64_wrapper(void) {
+    return riscv64_load_kernel("/boot/Image-riscv64", "/boot/initrd-riscv64.img", "root=/dev/sda1 ro");
+}
+
+EFI_STATUS boot_loongarch64_wrapper(void) {
+    return loongarch64_load_kernel("/boot/Image-loongarch64", "/boot/initrd-loongarch64.img", "root=/dev/sda1 ro");
+}
