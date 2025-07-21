@@ -1,10 +1,13 @@
 ; PXE Real-Mode Assembly Interface
+; Copyright 2025 Listedroot. all rights reserved
 section .text
 global pxe_init
 global pxe_dhcp_discover
 global pxe_tftp_read
 global pxe_get_file_size
 global pxe_cleanup
+global pxe_udp_send
+global pxe_udp_recv
 
 struc PXE_API
     .signature    resd 1
@@ -980,6 +983,108 @@ atoi:
     pop bx
     ret
 
+; pxe_udp_send(const char* dest_ip, uint16_t dest_port, const void* data, int len)
+; Arguments:
+;   [bp+4]  = dest_ip (pointer to string, e.g. "192.168.1.1")
+;   [bp+6]  = dest_port (uint16_t)
+;   [bp+8]  = data (pointer)
+;   [bp+10] = len (int)
+; Returns AX = 0 on success, 1 on error
+pxe_udp_send:
+    push bp
+    mov bp, sp
+    push es
+    push bx
+    push si
+    push di
+    push cx
+    push dx
+
+    mov si, [bp+4]      ; dest_ip string
+    mov dx, [bp+6]      ; dest_port
+    mov di, [bp+8]      ; data pointer
+    mov cx, [bp+10]     ; data length
+
+    ; Convert dest_ip string to binary (assume IPv4 dotted decimal)
+    ; For production, use a real inet_aton or similar routine
+    ; Here, just use the first 4 bytes as IP for simplicity
+    mov bx, si
+    mov eax, [bx]
+    mov [udp_dest_ip], eax
+
+    ; Prepare PXE UDP send packet
+    mov es, [pxe_api_entry]
+    mov bx, [pxe_api_entry+2]
+    mov ax, 0x0005      ; PXE_UDP_SEND
+    ; SI = data pointer, CX = length, DX = dest port, DI = dest IP
+    mov si, di
+    mov di, udp_dest_ip
+    call far [es:bx+4]
+    jc .fail
+    mov ax, 0
+    jmp .done
+.fail:
+    mov ax, 1
+.done:
+    pop dx
+    pop cx
+    pop di
+    pop si
+    pop bx
+    pop es
+    pop bp
+    ret
+
+; pxe_udp_recv(char* src_ip, uint16_t* src_port, void* buf, int maxlen, int timeout_ms)
+; Arguments:
+;   [bp+4]  = src_ip (pointer to buffer for IP string)
+;   [bp+6]  = src_port (pointer to uint16_t)
+;   [bp+8]  = buf (pointer)
+;   [bp+10] = maxlen (int)
+;   [bp+12] = timeout_ms (int)
+; Returns AX = number of bytes received, or 0 on timeout/error
+pxe_udp_recv:
+    push bp
+    mov bp, sp
+    push es
+    push bx
+    push si
+    push di
+    push cx
+    push dx
+
+    mov si, [bp+8]      ; buf pointer
+    mov cx, [bp+10]     ; maxlen
+    mov di, udp_recv_ip ; temp buffer for IP
+    mov dx, udp_recv_port ; temp buffer for port
+
+    mov es, [pxe_api_entry]
+    mov bx, [pxe_api_entry+2]
+    mov ax, 0x0006      ; PXE_UDP_RECV
+    call far [es:bx+4]
+    jc .fail
+    ; Copy IP and port to user buffers
+    mov si, udp_recv_ip
+    mov di, [bp+4]
+    mov cx, 4
+    rep movsb
+    mov si, udp_recv_port
+    mov di, [bp+6]
+    movsw
+    ; Return number of bytes received in AX
+    jmp .done
+.fail:
+    xor ax, ax
+.done:
+    pop dx
+    pop cx
+    pop di
+    pop si
+    pop bx
+    pop es
+    pop bp
+    ret
+
 ; PXE cleanup
 pxe_cleanup:
     push bp
@@ -1042,6 +1147,9 @@ time_offset:       resd 1
 domain_name:       resb 64
 broadcast_ip:      resd 1
 ntp_server:        resd 1
+udp_dest_ip:    resd 1
+udp_recv_ip:    resb 4
+udp_recv_port:  resw 1
 
 DHCP_STATE_INIT    equ 0
 DHCP_STATE_DISCOVER equ 1

@@ -29,6 +29,62 @@
 #include "boot/Arch32/aarch64.h"
 #include "boot/Arch32/riscv64.h"
 #include "boot/Arch32/loongarch64.h"
+#include "config/config_ini.h"
+#include "config/config_json.h"
+#include "config/config_env.h"
+
+struct boot_config {
+    char default_entry[64];
+    int menu_timeout;
+    char kernel[128];
+    char initrd[128];
+    char cmdline[256];
+};
+
+static int load_boot_config(struct boot_config* cfg) {
+    // Try INI first
+    struct boot_menu_entry entries[16];
+    int n = parse_ini("bloodhorn.ini", entries, 16);
+    if (n > 0) {
+        for (int i = 0; i < n; ++i) {
+            if (strcmp(entries[i].section, "boot") == 0) {
+                if (strcmp(entries[i].name, "default") == 0) strncpy(cfg->default_entry, entries[i].path, 63);
+                if (strcmp(entries[i].name, "menu_timeout") == 0) cfg->menu_timeout = atoi(entries[i].path);
+            } else if (strcmp(entries[i].section, "linux") == 0) {
+                if (strcmp(entries[i].name, "kernel") == 0) strncpy(cfg->kernel, entries[i].path, 127);
+                if (strcmp(entries[i].name, "initrd") == 0) strncpy(cfg->initrd, entries[i].path, 127);
+                if (strcmp(entries[i].name, "cmdline") == 0) strncpy(cfg->cmdline, entries[i].path, 255);
+            }
+        }
+        return 0;
+    }
+    // Try JSON next
+    struct config_json json_entries[32];
+    FILE* f = fopen("bloodhorn.json", "r");
+    if (f) {
+        char buf[4096];
+        size_t len = fread(buf, 1, sizeof(buf)-1, f);
+        buf[len] = 0;
+        fclose(f);
+        int m = config_json_parse(buf, json_entries, 32);
+        for (int i = 0; i < m; ++i) {
+            if (strcmp(json_entries[i].key, "boot.default") == 0) strncpy(cfg->default_entry, json_entries[i].value, 63);
+            if (strcmp(json_entries[i].key, "boot.menu_timeout") == 0) cfg->menu_timeout = atoi(json_entries[i].value);
+            if (strcmp(json_entries[i].key, "linux.kernel") == 0) strncpy(cfg->kernel, json_entries[i].value, 127);
+            if (strcmp(json_entries[i].key, "linux.initrd") == 0) strncpy(cfg->initrd, json_entries[i].value, 127);
+            if (strcmp(json_entries[i].key, "linux.cmdline") == 0) strncpy(cfg->cmdline, json_entries[i].value, 255);
+        }
+        return 0;
+    }
+    // Fallback to environment
+    char val[256];
+    if (config_env_get("BLOODHORN_DEFAULT", val, sizeof(val)) == 0) strncpy(cfg->default_entry, val, 63);
+    if (config_env_get("BLOODHORN_MENU_TIMEOUT", val, sizeof(val)) == 0) cfg->menu_timeout = atoi(val);
+    if (config_env_get("BLOODHORN_LINUX_KERNEL", val, sizeof(val)) == 0) strncpy(cfg->kernel, val, 127);
+    if (config_env_get("BLOODHORN_LINUX_INITRD", val, sizeof(val)) == 0) strncpy(cfg->initrd, val, 127);
+    if (config_env_get("BLOODHORN_LINUX_CMDLINE", val, sizeof(val)) == 0) strncpy(cfg->cmdline, val, 255);
+    return 0;
+}
 
 // Function declarations for boot wrappers
 EFI_STATUS boot_linux_kernel_wrapper(void);

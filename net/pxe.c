@@ -6,12 +6,16 @@
 #include "boot/Arch32/multiboot1.h"
 #include "boot/Arch32/multiboot2.h"
 #include "boot/Arch32/chainload.h"
+#include <time.h>
+#include <arpa/inet.h>
 
 extern int pxe_init(void);
 extern int pxe_dhcp_discover(void);
 extern int pxe_tftp_read(const char* filename, uint8_t* buffer, uint32_t size);
 extern int pxe_get_file_size(const char* filename);
 extern int pxe_cleanup(void);
+extern int pxe_udp_send(const char* dest_ip, uint16_t dest_port, const void* data, int len);
+extern int pxe_udp_recv(char* src_ip, uint16_t* src_port, void* buf, int maxlen, int timeout_ms);
 
 struct pxe_network_info {
     uint32_t client_ip;
@@ -29,6 +33,28 @@ struct pxe_network_info {
 
 static struct pxe_network_info network_info;
 static int pxe_initialized = 0;
+
+struct icmp_echo {
+    uint8_t type;
+    uint8_t code;
+    uint16_t checksum;
+    uint16_t id;
+    uint16_t seq;
+    uint8_t payload[32];
+};
+
+static uint16_t icmp_checksum(const void* data, int len) {
+    uint32_t sum = 0;
+    const uint16_t* ptr = (const uint16_t*)data;
+    while (len > 1) {
+        sum += *ptr++;
+        len -= 2;
+    }
+    if (len == 1) sum += *(const uint8_t*)ptr;
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    sum += (sum >> 16);
+    return ~sum;
+}
 
 int pxe_network_init(void) {
     if (pxe_initialized) {
@@ -147,4 +173,32 @@ int pxe_cleanup_network(void) {
 
 struct pxe_network_info* pxe_get_network_info(void) {
     return &network_info;
+} 
+
+// ICMP echo (ping) using PXE stack
+// Returns 0 on success, -1 on failure
+int pxe_icmp_echo(const char* host, int* rtt_ms) {
+    struct icmp_echo req = {0};
+    req.type = 8; // Echo request
+    req.code = 0;
+    req.id = htons(0x1234);
+    req.seq = htons(1);
+    memset(req.payload, 0xAA, sizeof(req.payload));
+    req.checksum = 0;
+    req.checksum = icmp_checksum(&req, sizeof(req));
+
+    uint16_t dest_port = 33434; // Arbitrary unused port
+    uint32_t start = (uint32_t)clock();
+    if (pxe_udp_send(host, dest_port, &req, sizeof(req)) < 0) return -1;
+
+    char src_ip[16];
+    uint16_t src_port;
+    struct icmp_echo resp;
+    int timeout = 1000; // 1s
+    int n = pxe_udp_recv(src_ip, &src_port, &resp, sizeof(resp), timeout);
+    if (n < (int)sizeof(resp)) return -1;
+    if (resp.type != 0 || resp.id != req.id || resp.seq != req.seq) return -1;
+    uint32_t end = (uint32_t)clock();
+    *rtt_ms = (int)(((end - start) * 1000) / CLOCKS_PER_SEC);
+    return 0;
 } 

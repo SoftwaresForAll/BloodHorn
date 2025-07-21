@@ -14,7 +14,6 @@ start:
     mov sp, 0x7C00
     sti
 
-    ; Print a message (optional, for debug)
     mov si, msg
 .print_char:
     lodsb
@@ -25,7 +24,6 @@ start:
     jmp .print_char
 
 .load_stage2:
-    ; Read 1 sector from LBA 1 to 0x8000
     mov ah, 0x02        ; BIOS read sectors
     mov al, 0x01        ; 1 sector
     mov ch, 0x00        ; Cylinder 0
@@ -36,7 +34,6 @@ start:
     int 0x13
     jc .disk_error
 
-    ; Jump to stage 2
     jmp 0x0000:0x8000
 
 .disk_error:

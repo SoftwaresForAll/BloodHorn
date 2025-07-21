@@ -8,16 +8,34 @@ int parse_ini(const char* filename, struct boot_menu_entry* entries, int max_ent
     FILE* f = fopen(filename, "r");
     if (!f) return -1;
     char line[256];
+    char current_section[64] = "";
     int count = 0;
     while (fgets(line, sizeof(line), f) && count < max_entries) {
-        if (line[0] == '[') continue; // skip section headers
-        char* eq = strchr(line, '=');
+        char* p = line;
+        while (*p == ' ' || *p == '\t') p++;
+        if (*p == ';' || *p == '#') continue;
+        if (*p == '[') {
+            char* end = strchr(p, ']');
+            if (end) {
+                int len = end - (p+1);
+                if (len > 0 && len < 64) {
+                    strncpy(current_section, p+1, len);
+                    current_section[len] = 0;
+                }
+            }
+            continue;
+        }
+        char* eq = strchr(p, '=');
         if (!eq) continue;
         *eq = 0;
-        strncpy(entries[count].name, line, sizeof(entries[count].name)-1);
-        strncpy(entries[count].path, eq+1, sizeof(entries[count].path)-1);
-        entries[count].name[sizeof(entries[count].name)-1] = 0;
-        entries[count].path[sizeof(entries[count].path)-1] = 0;
+        char* key = p;
+        char* value = eq+1;
+        while (*value == ' ' || *value == '\t') value++;
+        char* nl = strchr(value, '\n');
+        if (nl) *nl = 0;
+        snprintf(entries[count].section, sizeof(entries[count].section), "%s", current_section);
+        snprintf(entries[count].name, sizeof(entries[count].name), "%s", key);
+        snprintf(entries[count].path, sizeof(entries[count].path), "%s", value);
         count++;
     }
     fclose(f);
