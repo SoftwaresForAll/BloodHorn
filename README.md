@@ -1,4 +1,10 @@
-# BloodHorn Bootloader
+# BloodHorn
+<p align="center">
+  <img src="Zeak.png" alt="Project Logo" width="200">
+</p>
+
+
+
 BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and multiple CPU architectures.
 
 ---
@@ -43,7 +49,7 @@ BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and m
 - Linux
 - Multiboot 1
 - Multiboot 2
-- Limine
+- [Limine](https://github.com/limine-bootloader/limine-protocol/blob/trunk/PROTOCOL.md)
 - Chainloading
 - PXE
 
@@ -67,7 +73,7 @@ BloodHorn does not release pre-built binaries. This is to ensure maximum securit
 
 See INSTALL.md and USAGE.md for build and usage instructions.
 
-#### *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun !.*
+#### *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun and to be used in my future operating systems!.*
 ## License
 MIT
 
