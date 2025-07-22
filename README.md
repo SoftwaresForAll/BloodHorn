@@ -10,7 +10,7 @@ BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and m
 ---
 ## Donations and community support
 
-#### If you intend to support me, you can do so by donating. Even the smallest donation can make a difference.
+#### If you intend to support the project maintainer (Aka [@sparkelez](https://discordapp.com/users/1351825562791841832)), you can do so by donating. Even the smallest donation can make a difference.
 
 [![Donate](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/Listedroot/donate)
 
