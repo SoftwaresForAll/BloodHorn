@@ -77,7 +77,7 @@ BloodHorn does not release pre-built binaries. This is to ensure maximum securit
   <tr>
     <td align="center">
       <a href="https://github.com/Listedroot">
-        <img src="https://avatars.githubusercontent.com/Listedroot" width="120px;" alt="Your avatar"/>
+        <img src="https://avatars.githubusercontent.com/Listedroot" width="120px;" alt="My avatar"/>
         <br />
         <sub><b>Listedroot</b></sub>
       </a>
@@ -85,10 +85,10 @@ BloodHorn does not release pre-built binaries. This is to ensure maximum securit
       Lead Developer 
     </td>
     <td align="center">
-      <a href="https://github.com/unpopularopinion">
-        <img src="https://avatars.githubusercontent.com/unpopularopinion" width="120px;" alt="Friend avatar"/>
+      <a href="https://github.com/unpopularopinionn">
+        <img src="https://avatars.githubusercontent.com/unpopularopinionn" width="120px;" alt="Homie avatar"/>
         <br />
-        <sub><b>UnpopularOpinion</b></sub>
+        <sub><b>UnpopularOponion</b></sub>
       </a>
       <br />
       Main Team
