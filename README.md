@@ -71,6 +71,31 @@ BloodHorn does not release pre-built binaries. This is to ensure maximum securit
 - Different systems and firmware may require different build options or configurations.
 - This approach encourages review, customization, and community contributions.
 
+## ✨ Contributors
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/Listedroot">
+        <img src="https://avatars.githubusercontent.com/Listedroot" width="120px;" alt="Your avatar"/>
+        <br />
+        <sub><b>Listedroot</b></sub>
+      </a>
+      <br />
+      Lead Developer 
+    </td>
+    <td align="center">
+      <a href="https://github.com/unpopularopinion">
+        <img src="https://avatars.githubusercontent.com/unpopularopinion" width="120px;" alt="Friend avatar"/>
+        <br />
+        <sub><b>UnpopularOpinion</b></sub>
+      </a>
+      <br />
+      Main Team
+    </td>
+  </tr>
+</table>
+
 See INSTALL.md and USAGE.md for build and usage instructions.
 
 #### *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun and to be used in my future operating systems!.*
