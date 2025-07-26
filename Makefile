@@ -62,18 +62,30 @@ install_uefi_deps_win:
 	fi
 	pacman -S --noconfirm --needed mingw-w64-x86_64-gcc mingw-w64-x86_64-gnu-efi
 
-# Check and install UEFI dependencies
+# Check if UEFI deps are installed
+UEFI_DEPS_INSTALLED = $(shell (which $(UEFI_CC) >/dev/null 2>&1 && echo 1) || echo 0)
+
+# Check and install UEFI dependencies if needed
 check_uefi_deps:
-	@if [ -z "$(shell which $(UEFI_CC) 2>/dev/null)" ]; then \
-		echo "$(UEFI_CC) not found. Installing UEFI toolchain..."; \
-		$(MAKE) install_uefi_deps_$(if $(filter Windows%,$(OS)),win,linux); \
+	@echo "Checking UEFI toolchain..."
+	@if [ "$(UEFI_DEPS_INSTALLED)" = "0" ]; then \
+		echo "UEFI toolchain not found. Installing..."; \
+		$(MAKE) install_uefi_deps_$(if $(filter Windows%,$(OS)),win,linux) || (echo "Failed to install UEFI dependencies"; exit 1); \
+	else \
+		echo "UEFI toolchain is already installed."; \
 	fi
-	@for dep in $(UEFI_DEPS); do \
+	@echo "Verifying UEFI components..."
+	@missing_deps=0; \
+	for dep in $(UEFI_DEPS); do \
 		if [ ! -e "$$dep" ]; then \
-			echo "Dependency not found: $$dep"; \
-			exit 1; \
+			echo "Missing UEFI component: $$dep"; \
+			missing_deps=1; \
 		fi; \
-	done
+	done; \
+	if [ "$$missing_deps" = "1" ]; then \
+		echo "Some UEFI components are missing. Attempting to fix..."; \
+		$(MAKE) install_uefi_deps_$(if $(filter Windows%,$(OS)),win,linux) || (echo "Failed to install missing UEFI components"; exit 1); \
+	fi
 
 BUILDDIR = build
 ISODIR = iso
@@ -96,7 +108,11 @@ UEFI_OBJECTS = $(SOURCES:%.c=$(BUILDDIR)/uefi/%.o)
 
 .PHONY: all clean bios uefi iso test check_uefi_deps install_uefi_deps_linux install_uefi_deps_win
 
-all: check_uefi_deps bios uefi iso
+# Main build targets
+all: bios uefi iso
+
+# Dependencies for UEFI build
+uefi: check_uefi_deps $(BUILDDIR)/BloodHorn.efi
 
 $(BUILDDIR)/bios/%.o: %.c
 	@mkdir -p $(dir $@)
