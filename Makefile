@@ -8,15 +8,19 @@ OBJCOPY = objcopy
 BUILDDIR = build
 ISODIR = iso
 
-# Compiler flags
-CFLAGS = -Wall -Wextra -std=c99 -fno-stack-protector -fno-pie -no-pie
+# Base compiler flags
+BASE_CFLAGS = -Wall -Wextra -std=c99 -fno-stack-protector -fno-pie -no-pie
+
+# BIOS settings
+BIOS_CFLAGS = $(BASE_CFLAGS) -DARCH_BIOS
 ASFLAGS = -f bin
-LDFLAGS = -nostdlib -static -T bios.ld
+BIOS_LDFLAGS = -nostdlib -static -T bios.ld
 
 # UEFI toolchain
-UEFI_CC = x86_64-w64-mingw32-gcc
-UEFI_CFLAGS = -Wall -Wextra -std=c99 -fno-stack-protector -fpic -fshort-wchar -mno-red-zone -DEFI_FUNCTION_WRAPPER -DARCH_$(ARCH)
-UEFI_LDFLAGS = -nostdlib -Wl,-dll -shared -Wl,--subsystem,10 -e efi_main
+UEFI_CC = gcc
+UEFI_CFLAGS = $(BASE_CFLAGS) -fpic -fshort-wchar -mno-red-zone -DEFI_FUNCTION_WRAPPER -DARCH_UEFI
+UEFI_CFLAGS += -I/usr/include/efi -I/usr/include/efi/x86_64 -I/usr/include/efi/protocol
+UEFI_LDFLAGS = -nostdlib -Wl,-dll -shared -Wl,--subsystem,10 -e efi_main -L/usr/lib -lefi -lgnuefi
 
 # Source files
 SOURCES = main.c
@@ -45,19 +49,19 @@ bios: $(BUILDDIR)/bios/bootsector.bin $(BUILDDIR)/bios/stage2.bin
 
 $(BUILDDIR)/bios/%.o: %.c
 	@mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(BIOS_CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/bios/bootsector.bin: bios/bootsector.asm
 	@mkdir -p $(@D)
 	$(AS) $(ASFLAGS) $< -o $@
 
 $(BUILDDIR)/bios/stage2.bin: $(BIOS_OBJECTS)
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(LD) $(BIOS_LDFLAGS) -o $@ $^
 	$(OBJCOPY) -O binary $@ $@
 
 # UEFI build
-UEFI_CRT_OBJS = $(shell find /usr /mingw64 -name 'crt0-efi-x86_64.o' 2>/dev/null | head -1)
-UEFI_LDS = $(shell find /usr /mingw64 -name 'elf_x86_64_efi.lds' 2>/dev/null | head -1)
+UEFI_CRT_OBJS = /usr/lib/crt0-efi-x86_64.o
+UEFI_LDS = /usr/lib/gnuefi/elf_x86_64_efi.lds
 
 uefi: $(BUILDDIR)/BloodHorn.efi
 
@@ -66,12 +70,12 @@ $(BUILDDIR)/uefi/%.o: %.c
 	$(UEFI_CC) $(UEFI_CFLAGS) -c $< -o $@
 
 $(BUILDDIR)/BloodHorn.efi: $(UEFI_OBJECTS)
-	@if [ -z "$(UEFI_CRT_OBJS)" ] || [ ! -f "$(UEFI_CRT_OBJS)" ]; then \
-		echo "Error: UEFI CRT object file not found."; \
-		echo "Run 'make uefi-setup' for setup instructions."; \
+	@if [ ! -f "$(UEFI_CRT_OBJS)" ]; then \
+		echo "Error: UEFI CRT object file not found at $(UEFI_CRT_OBJS)"; \
+		echo "Make sure gnu-efi is installed: sudo apt-get install gnu-efi"; \
 		exit 1; \
 	fi
-	$(UEFI_CC) $(UEFI_LDFLAGS) -o $@ $^ $(UEFI_CRT_OBJS) -lefi -lgnuefi
+	$(UEFI_CC) -o $@ $(UEFI_CRT_OBJS) $^ $(UEFI_LDFLAGS)
 
 # ISO generation
 iso: $(ISODIR)/BloodHorn.iso
