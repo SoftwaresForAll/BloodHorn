@@ -73,7 +73,7 @@ jobs:
         (echo "QEMU test completed (timeout is expected)" && exit 0)
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: bloodhorn-efi
         path: |
