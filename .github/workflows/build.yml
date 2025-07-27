@@ -1,4 +1,4 @@
-name: UEFI Build and Test
+name: EDK2 Build and Test
 
 on:
   push:
@@ -12,29 +12,55 @@ jobs:
     
     steps:
     - uses: actions/checkout@v3
-      
+    
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
           build-essential \
-          gcc-mingw-w64-x86-64 \
-          binutils-mingw-w64-x86-64 \
-          gnu-efi \
-          ovmf \
+          uuid-dev \
+          nasm \
+          acpica-tools \
+          python3-distutils \
           qemu-system-x86 \
-          xorriso \
-          mtools
-        
-    - name: Build UEFI bootloader
+          ovmf \
+          git \
+          gcc-aarch64-linux-gnu \
+          gcc-riscv64-linux-gnu
+    
+    - name: Set up EDK2
       run: |
-        make uefi
+        # Clone EDK2
+        git clone --depth 1 https://github.com/tianocore/edk2.git
+        cd edk2
+        git submodule update --init
         
-    - name: Create bootable ISO
-      run: |
-        make iso
+        # Build base tools
+        make -C BaseTools
         
-    - name: Test in QEMU (basic boot test)
+        # Set up environment
+        export EDK_TOOLS_PATH=$(pwd)/BaseTools
+        export PACKAGES_PATH=$(pwd):$(pwd)/../
+        . edksetup.sh
+        
+        # Build BloodHorn
+        build -a X64 -p BloodHorn/BloodHorn.dsc -t GCC5
+        
+        # Verify build output
+        if [ ! -f "Build/BloodHorn/DEBUG_GCC5/X64/BloodHorn.efi" ]; then
+          echo "Error: EFI binary not found"
+          exit 1
+        fi
+        
+        # Create output directory
+        mkdir -p ../output/EFI/BOOT
+        cp Build/BloodHorn/DEBUG_GCC5/X64/BloodHorn.efi ../output/EFI/BOOT/BOOTX64.EFI
+        
+        # Create test ISO
+        cd ..
+        xorriso -as mkisofs -e EFI/BOOT/BOOTX64.EFI -no-emul-boot -o BloodHorn.iso output/
+    
+    - name: Test in QEMU
       run: |
         timeout 30s qemu-system-x86_64 \
           -bios /usr/share/ovmf/OVMF.fd \
@@ -45,11 +71,11 @@ jobs:
           -monitor none \
           -serial stdio || \
         (echo "QEMU test completed (timeout is expected)" && exit 0)
-        
-    - name: Verify EFI binary
-      run: |
-        if [ ! -f "build/BloodHorn.efi" ]; then
-          echo "Error: EFI binary not found"
-          exit 1
-        fi
-        echo "EFI binary built successfully"
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: bloodhorn-efi
+        path: |
+          BloodHorn.iso
+          edk2/Build/BloodHorn/DEBUG_GCC5/X64/BloodHorn.efi
