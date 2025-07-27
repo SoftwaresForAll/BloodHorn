@@ -8,110 +8,70 @@ OBJCOPY = objcopy
 BUILDDIR = build
 ISODIR = iso
 
-# Base compiler flags
-BASE_CFLAGS = -Wall -Wextra -std=c99 -fno-stack-protector -fno-pie -no-pie
-
-# BIOS settings
-BIOS_CFLAGS = $(BASE_CFLAGS) -DARCH_BIOS
-ASFLAGS = -f bin
-BIOS_LDFLAGS = -nostdlib -static -T bios.ld
-
 # UEFI toolchain
-UEFI_CC = gcc
-UEFI_CFLAGS = $(BASE_CFLAGS) -fpic -fshort-wchar -mno-red-zone -DEFI_FUNCTION_WRAPPER -DARCH_UEFI
-UEFI_CFLAGS += -I/usr/include/efi -I/usr/include/efi/x86_64 -I/usr/include/efi/protocol
-UEFI_LDFLAGS = -nostdlib -Wl,-dll -shared -Wl,--subsystem,10 -e efi_main -L/usr/lib -lefi -lgnuefi
+UEFI_CC = x86_64-w64-mingw32-gcc
+UEFI_OBJCOPY = x86_64-w64-mingw32-objcopy
+UEFI_TARGET = x86_64-w64-mingw32
+
+# UEFI flags
+UEFI_CFLAGS = -I/usr/include/efi -I/usr/include/efi/x86_64 -I/usr/include/efi/protocol \
+              -DEFI_FUNCTION_WRAPPER -fno-stack-protector -fpic -fshort-wchar -mno-red-zone \
+              -Wall -Wextra -std=c99 -DARCH_UEFI
+
+UEFI_LDFLAGS = -nostdlib -Wl,-dll,-shared -Wl,--subsystem,10 -e efi_main \
+               -L/usr/lib -lgnuefi -lefi
 
 # Source files
 SOURCES = main.c
-SOURCES += $(wildcard boot/*.c)
-SOURCES += $(wildcard boot/Arch32/*.c)
 SOURCES += $(wildcard uefi/*.c)
 SOURCES += $(wildcard fs/*.c)
 SOURCES += $(wildcard net/*.c)
 SOURCES += $(wildcard security/*.c)
-SOURCES += $(wildcard scripting/*.c)
-SOURCES += $(wildcard recovery/*.c)
-SOURCES += $(wildcard plugins/*.c)
 SOURCES += $(wildcard config/*.c)
-SOURCES += $(wildcard multiboot/*.c)
 
 # Object files
-BIOS_OBJECTS = $(addprefix $(BUILDDIR)/bios/,$(SOURCES:.c=.o))
-UEFI_OBJECTS = $(addprefix $(BUILDDIR)/uefi/,$(SOURCES:.c=.o))
+OBJECTS = $(addprefix $(BUILDDIR)/,$(SOURCES:.c=.o))
 
 # Default target
 .PHONY: all
-all: bios uefi
-
-# BIOS build
-bios: $(BUILDDIR)/bios/bootsector.bin $(BUILDDIR)/bios/stage2.bin
-
-$(BUILDDIR)/bios/%.o: %.c
-	@mkdir -p $(@D)
-	$(CC) $(BIOS_CFLAGS) -c $< -o $@
-
-$(BUILDDIR)/bios/bootsector.bin: bios/bootsector.asm
-	@mkdir -p $(@D)
-	$(AS) $(ASFLAGS) $< -o $@
-
-$(BUILDDIR)/bios/stage2.bin: $(BIOS_OBJECTS)
-	$(LD) $(BIOS_LDFLAGS) -o $@ $^
-	$(OBJCOPY) -O binary $@ $@
+all: uefi
 
 # UEFI build
-UEFI_CRT_OBJS = /usr/lib/crt0-efi-x86_64.o
-UEFI_LDS = /usr/lib/gnuefi/elf_x86_64_efi.lds
-
 uefi: $(BUILDDIR)/BloodHorn.efi
 
-$(BUILDDIR)/uefi/%.o: %.c
+# Rule to compile UEFI files
+$(BUILDDIR)/%.o: %.c
 	@mkdir -p $(@D)
 	$(UEFI_CC) $(UEFI_CFLAGS) -c $< -o $@
 
-$(BUILDDIR)/BloodHorn.efi: $(UEFI_OBJECTS)
-	@if [ ! -f "$(UEFI_CRT_OBJS)" ]; then \
-		echo "Error: UEFI CRT object file not found at $(UEFI_CRT_OBJS)"; \
-		echo "Make sure gnu-efi is installed: sudo apt-get install gnu-efi"; \
-		exit 1; \
-	fi
-	$(UEFI_CC) -o $@ $(UEFI_CRT_OBJS) $^ $(UEFI_LDFLAGS)
+# Link UEFI application
+$(BUILDDIR)/BloodHorn.efi: $(OBJECTS)
+	$(UEFI_CC) -o $(BUILDDIR)/BloodHorn.so $(OBJECTS) $(UEFI_LDFLAGS)
+	$(UEFI_OBJCOPY) --target=efi-app-x86_64 $(BUILDDIR)/BloodHorn.so $@
 
-# ISO generation
-iso: $(ISODIR)/BloodHorn.iso
-
-$(ISODIR)/BloodHorn.iso: bios uefi
+# Create a bootable UEFI ISO
+iso: uefi
 	@mkdir -p $(ISODIR)/EFI/BOOT
-	@mkdir -p $(ISODIR)/boot
 	cp $(BUILDDIR)/BloodHorn.efi $(ISODIR)/EFI/BOOT/BOOTX64.EFI
-	cp $(BUILDDIR)/bios/bootsector.bin $(ISODIR)/boot/
-	cp $(BUILDDIR)/bios/stage2.bin $(ISODIR)/boot/
-	xorriso -as mkisofs -b boot/bootsector.bin -no-emul-boot -o $@ $(ISODIR)
+	xorriso -as mkisofs -e EFI/BOOT/BOOTX64.EFI -no-emul-boot -o BloodHorn.iso $(ISODIR)
 
-# Test targets
-test: iso
-	qemu-system-x86_64 -cdrom $(ISODIR)/BloodHorn.iso -m 512
+# Run in QEMU for testing
+run: iso
+	qemu-system-x86_64 -bios /usr/share/ovmf/OVMF.fd -cdrom BloodHorn.iso -m 512 -vga std
 
-test-bios: bios
-	qemu-system-x86_64 -drive file=$(BUILDDIR)/bios/stage2.bin,format=raw -m 512
-
-test-uefi: uefi
-	qemu-system-x86_64 -bios /usr/share/ovmf/OVMF.fd -drive format=raw,file=fat:rw:$(BUILDDIR) -m 512
+debug: uefi
+	qemu-system-x86_64 -s -S -bios /usr/share/ovmf/OVMF.fd -hda fat:rw:$(BUILDDIR) -m 512 -vga std &
+	gdb -ex "target remote localhost:1234" -ex "symbol-file $(BUILDDIR)/BloodHorn.so"
 
 # Setup and info
 uefi-setup:
 	@echo "UEFI Development Setup Instructions:"
-	@echo "1. For Linux (Debian/Ubuntu):"
-	@echo "   sudo apt-get install gnu-efi"
-	@echo ""
-	@echo "2. For Linux (Fedora/RHEL):"
-	@echo "   sudo dnf install gnu-efi-devel"
-	@echo ""
-	@echo "3. For Windows (MSYS2):"
-	@echo "   pacman -S --needed mingw-w64-x86_64-gcc mingw-w64-x86_64-gnu-efi"
-	@echo ""
-	@echo "After installation, run 'make uefi-info' to verify the setup"
+	@echo "1. Install required packages:"
+	@echo "   sudo apt-get install gcc gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64 gnu-efi ovmf"
+	@echo "2. Build with 'make'"
+	@echo "3. Test with 'make run' or 'make debug'"
 
+# Clean target
 uefi-info:
 	@echo "UEFI Toolchain:"
 	@echo "  UEFI_CC: $(UEFI_CC) ($(shell which $(UEFI_CC) || echo 'not found'))"
