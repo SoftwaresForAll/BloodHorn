@@ -44,7 +44,10 @@ jobs:
         . edksetup.sh
         
         # Build BloodHorn
-        build -a X64 -p BloodHorn/BloodHorn.dsc -t GCC5
+        cd ..
+        cp -r BloodHorn edk2/
+        cd edk2
+        build -a X64 -p BloodHorn.dsc -t GCC5
         
         # Verify build output
         if [ ! -f "Build/BloodHorn/DEBUG_GCC5/X64/BloodHorn.efi" ]; then
@@ -53,11 +56,10 @@ jobs:
         fi
         
         # Create output directory
-        mkdir -p ../output/EFI/BOOT
-        cp Build/BloodHorn/DEBUG_GCC5/X64/BloodHorn.efi ../output/EFI/BOOT/BOOTX64.EFI
+        mkdir -p output/EFI/BOOT
+        cp Build/BloodHorn/DEBUG_GCC5/X64/BloodHorn.efi output/EFI/BOOT/BOOTX64.EFI
         
         # Create test ISO
-        cd ..
         xorriso -as mkisofs -e EFI/BOOT/BOOTX64.EFI -no-emul-boot -o BloodHorn.iso output/
     
     - name: Test in QEMU
