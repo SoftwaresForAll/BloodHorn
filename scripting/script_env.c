@@ -1,4 +1,5 @@
 #include "script_env.h"
+#include "compat.h"
 #include <string.h>
 static char env[16][64];
 static int env_count = 0;

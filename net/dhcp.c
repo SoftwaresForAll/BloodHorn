@@ -1,4 +1,5 @@
 #include "dhcp.h"
+#include "compat.h"
 #include <stdint.h>
 #include <string.h>
 static uint8_t dhcp_options[312];

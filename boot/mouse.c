@@ -1,4 +1,5 @@
 #include "mouse.h"
+#include "compat.h"
 #include <Uefi.h>
 #include <Protocol/SimplePointer.h>
 

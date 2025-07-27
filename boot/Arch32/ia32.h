@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_IA32_H
 #define BLOODHORN_IA32_H
 #include <stdint.h>
+#include "compat.h"
 
 struct linux_kernel_header {
     uint8_t setup_sects;

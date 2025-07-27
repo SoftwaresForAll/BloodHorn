@@ -1,4 +1,5 @@
 #include "shell_history.h"
+#include "compat.h"
 #include <string.h>
 static char history[16][128];
 static int hist_count = 0;

@@ -1,4 +1,5 @@
 #include "arp.h"
+#include "compat.h"
 #include <stdint.h>
 #include <string.h>
 static uint8_t arp_cache_ip[4];

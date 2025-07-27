@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_X86_64_H
 #define BLOODHORN_X86_64_H
 #include <stdint.h>
+#include "compat.h"
 
 struct linux_kernel_header {
     uint8_t setup_sects;

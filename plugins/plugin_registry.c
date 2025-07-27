@@ -1,4 +1,5 @@
 #include "plugin_registry.h"
+#include "compat.h"
 #include <string.h>
 static struct plugin_entry { char name[64]; void* data; uint32_t size; } plugins[16];
 static int plugin_count = 0;

@@ -1,4 +1,5 @@
 #include "net_utils.h"
+#include "compat.h"
 #include <stdint.h>
 uint16_t net_checksum(const uint8_t* data, int len) {
     uint32_t sum = 0;

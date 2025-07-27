@@ -1,4 +1,5 @@
 #include "config_env.h"
+#include "compat.h"
 #include <string.h>
 
 int config_env_get(const char* key, char* value, int maxlen) {

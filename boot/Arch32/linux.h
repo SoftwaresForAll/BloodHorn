@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_LINUX_H
 #define BLOODHORN_LINUX_H
 #include <stdint.h>
+#include "compat.h"
 
 struct linux_boot_params {
     uint8_t setup_sects;

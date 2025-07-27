@@ -2,6 +2,7 @@
 #define _BOOT_MENU_H_
 
 #include <Uefi.h>
+#include "compat.h"
 
 // Function to add a boot menu entry
 EFI_STATUS

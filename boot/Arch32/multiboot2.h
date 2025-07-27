@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_MULTIBOOT2_H
 #define BLOODHORN_MULTIBOOT2_H
 #include <stdint.h>
+#include "compat.h"
 
 #define MULTIBOOT2_HEADER_MAGIC 0xE85250D6
 #define MULTIBOOT2_BOOTLOADER_MAGIC 0x36D76289

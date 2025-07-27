@@ -15,6 +15,10 @@
   VERSION_STRING                 = 1.0
   ENTRY_POINT                    = UefiMain
   UNLOAD_IMAGE                   = BloodHornUnload
+  
+  # EDK2 Compatibility Defines
+  DEFINE COMPATIBILITY_LAYER     = TRUE
+  DEFINE SECURE_BOOT_ENABLE      = TRUE
 
 [Sources]
   src/main.c
@@ -47,6 +51,11 @@
   # Additional Libraries
   FileHandleLib
   DevicePathLib
+  
+  # Security Libraries
+  BaseCryptLib
+  TpmMeasurementLib
+  AuthVariableLib
   
   # Cryptographic Libraries for Secure Boot
   BaseCryptLib

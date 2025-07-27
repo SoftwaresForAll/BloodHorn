@@ -1,4 +1,5 @@
 #include "entropy.h"
+#include "compat.h"
 #include <stdint.h>
 #include <stddef.h>
 #include "crypto.h"

@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_PXE_H
 #define BLOODHORN_PXE_H
 #include <stdint.h>
+#include "compat.h"
 
 struct pxe_network_info {
     uint32_t client_ip;

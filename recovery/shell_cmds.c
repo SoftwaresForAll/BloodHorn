@@ -1,4 +1,5 @@
 #include "shell_cmds.h"
+#include "compat.h"
 #include <string.h>
 #include <stdio.h>
 

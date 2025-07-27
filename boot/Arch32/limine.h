@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_LIMINE_H
 #define BLOODHORN_LIMINE_H
 #include <stdint.h>
+#include "compat.h"
 
 #define LIMINE_MEMMAP_REQUEST 0x67cf3d9d378a806f
 #define LIMINE_ENTRY_REQUEST 0x13a86c035aa1c6d5

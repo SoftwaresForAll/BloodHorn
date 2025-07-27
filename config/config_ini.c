@@ -1,6 +1,7 @@
 // BloodHorn INI Config Parser
 // Real implementation for boot menu entries
 #include <stdio.h>
+#include "compat.h"
 #include <string.h>
 #include "config_ini.h"
 

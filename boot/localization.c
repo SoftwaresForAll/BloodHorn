@@ -1,4 +1,5 @@
 #include "localization.h"
+#include "compat.h"
 #include <string.h>
 
 static const struct { const char* key; const wchar_t* en; const wchar_t* es; } table[] = {

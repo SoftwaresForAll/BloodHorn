@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "compat.h"
 #include <string.h>
 #include "pxe.h"
 #include "boot/Arch32/linux.h"

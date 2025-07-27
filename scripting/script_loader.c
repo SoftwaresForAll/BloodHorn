@@ -1,4 +1,5 @@
 #include "script_loader.h"
+#include "compat.h"
 #include <stdint.h>
 #include <string.h>
 int script_loader_load(const char* path, char* out, int maxlen) {

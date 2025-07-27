@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_CHAINLOAD_H
 #define BLOODHORN_CHAINLOAD_H
 #include <stdint.h>
+#include "compat.h"
 
 struct mbr_partition {
     uint8_t status;

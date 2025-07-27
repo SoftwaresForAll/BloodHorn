@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_FAT32_H
 #define BLOODHORN_FAT32_H
 #include <stdint.h>
+#include "compat.h"
 
 struct fat32_bootsector {
     uint8_t jump[3];

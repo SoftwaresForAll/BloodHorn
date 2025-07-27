@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_AARCH64_H
 #define BLOODHORN_AARCH64_H
 #include <stdint.h>
+#include "compat.h"
 
 struct aarch64_boot_params {
     uint64_t dtb_addr;

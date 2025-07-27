@@ -1,4 +1,5 @@
 #include "config_json.h"
+#include "compat.h"
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>

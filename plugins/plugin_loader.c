@@ -1,4 +1,5 @@
 #include "plugin_loader.h"
+#include "compat.h"
 #include "plugin_registry.h"
 #include <stdint.h>
 #include <string.h>

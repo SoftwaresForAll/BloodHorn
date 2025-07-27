@@ -1,4 +1,5 @@
 #include "config_validate.h"
+#include "compat.h"
 #include <string.h>
 
 int config_validate_key(const char* key) {

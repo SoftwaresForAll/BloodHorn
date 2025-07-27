@@ -3,21 +3,36 @@
   <img src="Zeak.png" alt="Project Logo" width="200">
 </p>
 
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![EDK2 Compatible](https://img.shields.io/badge/EDK2-Compatible-blue)](https://github.com/tianocore/tianocore.github.io/)
+[![UEFI](https://img.shields.io/badge/UEFI-Secure%20Boot-0078D7)](https://uefi.org/)
+[![Architectures](https://img.shields.io/badge/Arch-x86__64%20%7C%20ARM64%20%7C%20RISC--V-0078D7)](https://en.wikipedia.org/wiki/Unified_Extensible_Firmware_Interface)
+[![Build Status](https://github.com/Listedroot/BloodHorn/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/Listedroot/BloodHorn/actions)
 
 BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and multiple CPU architectures.
 
 ---
-## Donations and community support
+## Build Requirements
+- GCC/Clang
+- NASM
+- EDK2 (for UEFI builds)
+- Python 3.6+
 
-#### If you intend to support the project maintainer (Aka [@sparkelez](https://discordapp.com/users/1351825562791841832)), you can do so by donating. Even the smallest donation can make a difference.
+## Quick Build
+```bash
+# BIOS version
+make bios
 
-[![Donate](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/Listedroot/donate)
+# UEFI version (requires EDK2)
+make uefi
+
+# Test in QEMU
+make test-bios  # or test-uefi
+```
 
 ## Features
 - Linux boot
-- Multiboot 1
-- Multiboot 2
+- Multiboot 1 & 2
 - Limine
 - Chainloading
 - PXE network boot

@@ -2,6 +2,7 @@
 #define _GRAPHICS_H_
 
 #include <Uefi.h>
+#include "compat.h"
 
 // Function to initialize graphics
 EFI_STATUS

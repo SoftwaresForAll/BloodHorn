@@ -1,7 +1,7 @@
 ## @file
 #  BloodHorn Bootloader - Platform Description
 #
-#  Copyright (c) 2023, Your Name. All rights reserved.<BR>
+#  Copyright (c) 2025, Listedroot. All rights reserved.<BR>
 #
 #  SPDX-License-Identifier: BSD-2-Clause-Patent
 #
@@ -16,9 +16,13 @@
   SUPPORTED_ARCHITECTURES        = X64
   BUILD_TARGETS                  = DEBUG|RELEASE|NOOPT
   SKUID_IDENTIFIER               = DEFAULT
+  
+  # Define EDK2 environment for da new compatibility layer
+  DEFINE COMPATIBILITY_LAYER     = TRUE
+  DEFINE SECURE_BOOT_ENABLE      = TRUE
 
 [LibraryClasses.common]
-  # Basic Libraries
+  # Basic Libraries (all of this is PAIN)
   BaseLib|MdePkg/Library/BaseLib/BaseLib.inf
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
   DebugLib|MdePkg/Library/BaseDebugLibSerialPort/BaseDebugLibSerialPort.inf

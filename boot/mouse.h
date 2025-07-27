@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_MOUSE_H
 #define BLOODHORN_MOUSE_H
 #include <stdint.h>
+#include "compat.h"
 
 struct MouseState {
     int x;

@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "compat.h"
 #include <string.h>
 #include "x86_64.h"
 

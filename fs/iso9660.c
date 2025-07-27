@@ -1,4 +1,5 @@
 #include "iso9660.h"
+#include "compat.h"
 #include <stdint.h>
 #include <string.h>
 extern void read_sector(uint32_t lba, uint8_t* buf);

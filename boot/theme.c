@@ -1,5 +1,5 @@
 #include "theme.h"
-#include <string.h>
+#include "compat.h"
 
 static struct BootMenuTheme current_theme = {
     .background_color = 0x1A1A2E,

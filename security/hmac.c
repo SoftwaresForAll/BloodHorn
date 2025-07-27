@@ -1,4 +1,5 @@
 #include "hmac.h"
+#include "compat.h"
 #include "crypto.h"
 #include <stdint.h>
 #include <string.h>

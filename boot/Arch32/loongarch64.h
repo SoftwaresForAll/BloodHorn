@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_LOONGARCH64_H
 #define BLOODHORN_LOONGARCH64_H
 #include <stdint.h>
+#include "compat.h"
 
 struct loongarch64_boot_params {
     uint64_t dtb_addr;

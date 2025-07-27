@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "compat.h"
 #include <string.h>
 #include "loongarch64.h"
 

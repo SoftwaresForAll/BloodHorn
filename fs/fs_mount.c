@@ -1,4 +1,5 @@
 #include "fs_mount.h"
+#include "compat.h"
 #include "fat32.h"
 #include "ext2.h"
 #include "iso9660.h"

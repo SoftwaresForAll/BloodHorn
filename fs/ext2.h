@@ -1,6 +1,7 @@
 #ifndef BLOODHORN_EXT2_H
 #define BLOODHORN_EXT2_H
 #include <stdint.h>
+#include "compat.h"
 
 struct ext2_super_block {
     uint32_t   s_inodes_count;

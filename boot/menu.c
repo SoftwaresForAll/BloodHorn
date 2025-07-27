@@ -1,4 +1,5 @@
 #include <Uefi.h>
+#include "compat.h"
 #include <Library/UefiLib.h>
 #include <Library/UefiBootServicesTableLib.h>
 #include <Library/MemoryAllocationLib.h>

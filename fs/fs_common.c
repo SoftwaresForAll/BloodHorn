@@ -1,4 +1,5 @@
 #include "fs_common.h"
+#include "compat.h"
 #include <string.h>
 int fs_filename_cmp(const char* a, const char* b) {
     return strcasecmp(a, b);

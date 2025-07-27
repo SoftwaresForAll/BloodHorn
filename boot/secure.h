@@ -2,6 +2,7 @@
 #define _SECURE_BOOT_H_
 
 #include <Uefi.h>
+#include "compat.h"
 
 // Function to verify an image signature
 EFI_STATUS

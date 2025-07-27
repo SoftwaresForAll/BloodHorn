@@ -1,4 +1,5 @@
 #include "tftp.h"
+#include "compat.h"
 #include <stdint.h>
 #include <string.h>
 static int tftp_send_rrq(const char* filename, uint8_t* buf, int blksize) {

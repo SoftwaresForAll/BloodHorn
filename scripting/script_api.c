@@ -1,4 +1,5 @@
 #include "script_api.h"
+#include "compat.h"
 #include "lua.h"
 #include <string.h>
 static struct { char name[32]; void* fn; } cfuncs[16];

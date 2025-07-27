@@ -1,4 +1,5 @@
 #include "shell_fs.h"
+#include "compat.h"
 #include "../fs/fat32.h"
 #include "../fs/ext2.h"
 #include <string.h>
