@@ -14,6 +14,8 @@ start:
     mov sp, 0x7C00
     sti
 
+    mov [BOOT_DRIVE], dl
+
     mov si, msg
 .print_char:
     lodsb
@@ -30,7 +32,9 @@ start:
     mov cl, 0x02        ; Sector 2 (LBA 1)
     mov dh, 0x00        ; Head 0
     mov dl, [BOOT_DRIVE]; Boot drive
-    mov bx, 0x8000      ; Buffer
+    mov bx, 0x0000      ; Buffer offset
+    mov ax, 0x8000
+    mov es, ax
     int 0x13
     jc .disk_error
 
