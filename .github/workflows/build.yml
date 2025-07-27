@@ -21,7 +21,7 @@ jobs:
           uuid-dev \
           nasm \
           acpica-tools \
-          python3-distutils \
+          python3-full \
           qemu-system-x86 \
           ovmf \
           git \
