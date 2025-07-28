@@ -13,7 +13,6 @@ VerifyImageSignature(
     IN CONST UINT8   *PublicKey,
     IN UINTN         PublicKeySize
 );
-// what
 // Function to check if Secure Boot is enabled
 BOOLEAN EFIAPI
 IsSecureBootEnabled(VOID);
