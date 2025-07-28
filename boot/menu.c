@@ -15,7 +15,20 @@
 #include "../config/config_ini.h"
 #include "../config/config_json.h"
 #include "../config/config_env.h"
-
+// what the FUCK! NOT POSSIBLE BABY IM C GOD
+// but you gotta admit one thing. THAT UR SMART !!!
+// yes and that im the absoulute best at assembly
+// ITS TRUE! i lost a brain cell while hearing this but i belive in u, lol
+// btw do we keep the comments? just for the entertaiment of users? eh ppl don't want code they want effectivness so keep it
+// say smth to the future people that are looking at this
+// if you want to be good at your life. just be a dev and suffer
+// did half life 3 release?  AND DID PORTAL 3 RELEASE??
+//yea u reminded me
+// yea that was it
+// BTW people are thinking this is one person talking to himself
+//a simple note. this is called vscode liveshare . AND IM NOT Autistic so please chill
+// anyways bro quick commit and push cuz im gonan go afk for awhile
+// SKADOOOOOOOOOOOSSH!
 #define MAX_BOOT_ENTRIES 128
 #define MAX_ENTRY_LENGTH 64
 #define VISIBLE_MENU_ENTRIES 10

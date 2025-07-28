@@ -1,5 +1,6 @@
 #ifndef BLOODHORN_THEME_H
 #define BLOODHORN_THEME_H
+
 #include <stdint.h>
 #include "compat.h"
 

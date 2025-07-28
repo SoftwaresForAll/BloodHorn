@@ -5,19 +5,18 @@
 #include "compat.h"
 
 // Function to add a boot menu entry
-EFI_STATUS
+EFI_STATUS EFIAPI
 AddBootEntry(
     IN CONST CHAR16 *Name,
-    IN EFI_STATUS (*BootFunction)(VOID)
+    IN EFI_STATUS (EFIAPI *BootFunction)(VOID)
 );
 
 // Function to display and handle the boot menu
-EFI_STATUS
+EFI_STATUS EFIAPI
 ShowBootMenu(VOID);
 
 // Function to print text at specific coordinates with colors
-VOID
-EFIAPI
+VOID EFIAPI
 PrintXY(
     IN UINTN X,
     IN UINTN Y,

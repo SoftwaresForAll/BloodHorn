@@ -1,16 +1,17 @@
 #ifndef BLOODHORN_MOUSE_H
 #define BLOODHORN_MOUSE_H
-#include <stdint.h>
+
+#include <Uefi.h>
 #include "compat.h"
 
 struct MouseState {
-    int x;
-    int y;
-    int left_button;
-    int right_button;
+    INT32 x;
+    INT32 y;
+    BOOLEAN left_button;
+    BOOLEAN right_button;
 };
 
-void InitMouse(void);
-void GetMouseState(struct MouseState* state);
+VOID EFIAPI InitMouse(VOID);
+VOID EFIAPI GetMouseState(struct MouseState* state);
 
-#endif // BLOODHORN_MOUSE_H 
+#endif // BLOODHORN_MOUSE_H
