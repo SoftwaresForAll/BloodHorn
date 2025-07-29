@@ -34,6 +34,10 @@
 #include "config/config_json.h"
 #include "config/config_env.h"
 
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
 struct boot_config {
     char default_entry[64];
     int menu_timeout;
@@ -43,58 +47,101 @@ struct boot_config {
 };
 
 static int load_boot_config(struct boot_config* cfg) {
-    // Try INI first
     struct boot_menu_entry entries[16];
     int n = parse_ini("bloodhorn.ini", entries, 16);
     if (n > 0) {
         for (int i = 0; i < n; ++i) {
             if (strcmp(entries[i].section, "boot") == 0) {
-                if (strcmp(entries[i].name, "default") == 0) strncpy(cfg->default_entry, entries[i].path, 63);
-                if (strcmp(entries[i].name, "menu_timeout") == 0) cfg->menu_timeout = atoi(entries[i].path);
+                if (strcmp(entries[i].name, "default") == 0) {
+                    strncpy(cfg->default_entry, entries[i].path, sizeof(cfg->default_entry) - 1);
+                    cfg->default_entry[sizeof(cfg->default_entry) - 1] = '\0';
+                }
+                if (strcmp(entries[i].name, "menu_timeout") == 0) {
+                    cfg->menu_timeout = atoi(entries[i].path);
+                }
             } else if (strcmp(entries[i].section, "linux") == 0) {
-                if (strcmp(entries[i].name, "kernel") == 0) strncpy(cfg->kernel, entries[i].path, 127);
-                if (strcmp(entries[i].name, "initrd") == 0) strncpy(cfg->initrd, entries[i].path, 127);
-                if (strcmp(entries[i].name, "cmdline") == 0) strncpy(cfg->cmdline, entries[i].path, 255);
+                if (strcmp(entries[i].name, "kernel") == 0) {
+                    strncpy(cfg->kernel, entries[i].path, sizeof(cfg->kernel) - 1);
+                    cfg->kernel[sizeof(cfg->kernel) - 1] = '\0';
+                }
+                if (strcmp(entries[i].name, "initrd") == 0) {
+                    strncpy(cfg->initrd, entries[i].path, sizeof(cfg->initrd) - 1);
+                    cfg->initrd[sizeof(cfg->initrd) - 1] = '\0';
+                }
+                if (strcmp(entries[i].name, "cmdline") == 0) {
+                    strncpy(cfg->cmdline, entries[i].path, sizeof(cfg->cmdline) - 1);
+                    cfg->cmdline[sizeof(cfg->cmdline) - 1] = '\0';
+                }
             }
         }
         return 0;
     }
-    // Try JSON next
+
     struct config_json json_entries[32];
     FILE* f = fopen("bloodhorn.json", "r");
     if (f) {
         char buf[4096];
-        size_t len = fread(buf, 1, sizeof(buf)-1, f);
-        buf[len] = 0;
+        size_t len = fread(buf, 1, sizeof(buf) - 1, f);
+        buf[len] = '\0';
         fclose(f);
         int m = config_json_parse(buf, json_entries, 32);
         for (int i = 0; i < m; ++i) {
-            if (strcmp(json_entries[i].key, "boot.default") == 0) strncpy(cfg->default_entry, json_entries[i].value, 63);
-            if (strcmp(json_entries[i].key, "boot.menu_timeout") == 0) cfg->menu_timeout = atoi(json_entries[i].value);
-            if (strcmp(json_entries[i].key, "linux.kernel") == 0) strncpy(cfg->kernel, json_entries[i].value, 127);
-            if (strcmp(json_entries[i].key, "linux.initrd") == 0) strncpy(cfg->initrd, json_entries[i].value, 127);
-            if (strcmp(json_entries[i].key, "linux.cmdline") == 0) strncpy(cfg->cmdline, json_entries[i].value, 255);
+            if (strcmp(json_entries[i].key, "boot.default") == 0) {
+                strncpy(cfg->default_entry, json_entries[i].value, sizeof(cfg->default_entry) - 1);
+                cfg->default_entry[sizeof(cfg->default_entry) - 1] = '\0';
+            }
+            if (strcmp(json_entries[i].key, "boot.menu_timeout") == 0) {
+                cfg->menu_timeout = atoi(json_entries[i].value);
+            }
+            if (strcmp(json_entries[i].key, "linux.kernel") == 0) {
+                strncpy(cfg->kernel, json_entries[i].value, sizeof(cfg->kernel) - 1);
+                cfg->kernel[sizeof(cfg->kernel) - 1] = '\0';
+            }
+            if (strcmp(json_entries[i].key, "linux.initrd") == 0) {
+                strncpy(cfg->initrd, json_entries[i].value, sizeof(cfg->initrd) - 1);
+                cfg->initrd[sizeof(cfg->initrd) - 1] = '\0';
+            }
+            if (strcmp(json_entries[i].key, "linux.cmdline") == 0) {
+                strncpy(cfg->cmdline, json_entries[i].value, sizeof(cfg->cmdline) - 1);
+                cfg->cmdline[sizeof(cfg->cmdline) - 1] = '\0';
+            }
         }
         return 0;
     }
-    // Fallback to environment
+
+    // Fallback to environment variables
     char val[256];
-    if (config_env_get("BLOODHORN_DEFAULT", val, sizeof(val)) == 0) strncpy(cfg->default_entry, val, 63);
-    if (config_env_get("BLOODHORN_MENU_TIMEOUT", val, sizeof(val)) == 0) cfg->menu_timeout = atoi(val);
-    if (config_env_get("BLOODHORN_LINUX_KERNEL", val, sizeof(val)) == 0) strncpy(cfg->kernel, val, 127);
-    if (config_env_get("BLOODHORN_LINUX_INITRD", val, sizeof(val)) == 0) strncpy(cfg->initrd, val, 127);
-    if (config_env_get("BLOODHORN_LINUX_CMDLINE", val, sizeof(val)) == 0) strncpy(cfg->cmdline, val, 255);
+    if (config_env_get("BLOODHORN_DEFAULT", val, sizeof(val)) == 0) {
+        strncpy(cfg->default_entry, val, sizeof(cfg->default_entry) - 1);
+        cfg->default_entry[sizeof(cfg->default_entry) - 1] = '\0';
+    }
+    if (config_env_get("BLOODHORN_MENU_TIMEOUT", val, sizeof(val)) == 0) {
+        cfg->menu_timeout = atoi(val);
+    }
+    if (config_env_get("BLOODHORN_LINUX_KERNEL", val, sizeof(val)) == 0) {
+        strncpy(cfg->kernel, val, sizeof(cfg->kernel) - 1);
+        cfg->kernel[sizeof(cfg->kernel) - 1] = '\0';
+    }
+    if (config_env_get("BLOODHORN_LINUX_INITRD", val, sizeof(val)) == 0) {
+        strncpy(cfg->initrd, val, sizeof(cfg->initrd) - 1);
+        cfg->initrd[sizeof(cfg->initrd) - 1] = '\0';
+    }
+    if (config_env_get("BLOODHORN_LINUX_CMDLINE", val, sizeof(val)) == 0) {
+        strncpy(cfg->cmdline, val, sizeof(cfg->cmdline) - 1);
+        cfg->cmdline[sizeof(cfg->cmdline) - 1] = '\0';
+    }
+
     return 0;
 }
 
-// Function declarations for boot wrappers
+// Forward declarations for boot wrappers
 EFI_STATUS boot_linux_kernel_wrapper(void);
 EFI_STATUS boot_multiboot2_kernel_wrapper(void);
 EFI_STATUS boot_limine_kernel_wrapper(void);
 EFI_STATUS boot_chainload_wrapper(void);
 EFI_STATUS boot_pxe_network_wrapper(void);
 EFI_STATUS boot_recovery_shell_wrapper(void);
-EFI_STATUS boot_uefi_shell_wrapper(void);
+EFI_STATUS boot_uefi_shell_wrapper(EFI_HANDLE ImageHandle);  // added parameter here
 EFI_STATUS exit_to_firmware_wrapper(void);
 EFI_STATUS boot_ia32_wrapper(void);
 EFI_STATUS boot_x86_64_wrapper(void);
@@ -102,10 +149,11 @@ EFI_STATUS boot_aarch64_wrapper(void);
 EFI_STATUS boot_riscv64_wrapper(void);
 EFI_STATUS boot_loongarch64_wrapper(void);
 
-// Helper: load theme and language from config 
-static void LoadThemeAndLanguageFromConfig() {
+// Helper to load theme and language from config files
+static void LoadThemeAndLanguageFromConfig(void) {
     struct BootMenuTheme theme = {0};
     char lang[8] = "en";
+
     FILE* f = fopen("bloodhorn.ini", "r");
     if (f) {
         char line[256];
@@ -118,8 +166,8 @@ static void LoadThemeAndLanguageFromConfig() {
             if (strstr(line, "theme_footer_color")) sscanf(line, "%*[^=]=%x", &theme.footer_color);
             if (strstr(line, "theme_background_image")) {
                 char imgfile[128];
-                sscanf(line, "%*[^=]=%s", imgfile);
-                theme.background_image = LoadImageFile(imgfile);
+                sscanf(line, "%*[^=]=%127s", imgfile);
+                theme.background_image = LoadImageFile(imgfile); // Assumes LoadImageFile defined elsewhere
             }
             if (strstr(line, "language")) sscanf(line, "%*[^=]=%7s", lang);
         }
@@ -128,8 +176,10 @@ static void LoadThemeAndLanguageFromConfig() {
         f = fopen("bloodhorn.json", "r");
         if (f) {
             char json[4096];
-            size_t len = fread(json, 1, sizeof(json)-1, f);
-            json[len] = 0;
+            size_t len = fread(json, 1, sizeof(json) - 1, f);
+            json[len] = '\0';
+            fclose(f);
+
             struct config_json entries[64];
             int count = config_json_parse(json, entries, 64);
             for (int i = 0; i < count; ++i) {
@@ -140,13 +190,13 @@ static void LoadThemeAndLanguageFromConfig() {
                 if (strcmp(entries[i].key, "theme.selected_text_color") == 0) theme.selected_text_color = (uint32_t)strtoul(entries[i].value, NULL, 16);
                 if (strcmp(entries[i].key, "theme.footer_color") == 0) theme.footer_color = (uint32_t)strtoul(entries[i].value, NULL, 16);
                 if (strcmp(entries[i].key, "theme.background_image") == 0) theme.background_image = LoadImageFile(entries[i].value);
-                if (strcmp(entries[i].key, "language") == 0) strncpy(lang, entries[i].value, 7);
+                if (strcmp(entries[i].key, "language") == 0) strncpy(lang, entries[i].value, sizeof(lang) - 1);
             }
-            fclose(f);
         }
     }
-    SetBootMenuTheme(&theme);
-    SetLanguage(lang);
+
+    SetBootMenuTheme(&theme); // Assumes defined elsewhere
+    SetLanguage(lang);        // Assumes defined elsewhere
 }
 
 EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *SystemTable) {
@@ -167,11 +217,9 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syste
     gST->ConOut->SetMode(gST->ConOut, 0);
     gST->ConOut->ClearScreen(gST->ConOut);
 
-    // Load theme and language from config
     LoadThemeAndLanguageFromConfig();
     InitMouse();
 
-    // Add boot menu entries with full architecture support
     AddBootEntry(L"Linux Kernel", boot_linux_kernel_wrapper);
     AddBootEntry(L"Multiboot2 Kernel", boot_multiboot2_kernel_wrapper);
     AddBootEntry(L"Limine Kernel", boot_limine_kernel_wrapper);
@@ -183,13 +231,11 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syste
     AddBootEntry(L"RISC-V 64", boot_riscv64_wrapper);
     AddBootEntry(L"LoongArch 64", boot_loongarch64_wrapper);
     AddBootEntry(L"Recovery Shell", boot_recovery_shell_wrapper);
-    AddBootEntry(L"UEFI Shell", boot_uefi_shell_wrapper);
+    AddBootEntry(L"UEFI Shell", (EFI_STATUS (*)(void))boot_uefi_shell_wrapper);
     AddBootEntry(L"Exit to UEFI Firmware", exit_to_firmware_wrapper);
 
-    // Show the graphical boot menu
     Status = ShowBootMenu();
     if (Status == EFI_SUCCESS) {
-        // Here, load and verify the selected kernel (example: kernel.efi)
         VOID* KernelBuffer = NULL;
         UINTN KernelSize = 0;
         Status = LoadAndVerifyKernel(L"kernel.efi", &KernelBuffer, &KernelSize);
@@ -199,7 +245,6 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syste
         }
     }
 
-    // If we get here, no bootable device was found or kernel failed.
     Print(L"\r\n  No bootable device found or kernel failed.\r\n");
     Print(L"  Press any key to reboot...");
     EFI_INPUT_KEY Key;
@@ -210,7 +255,7 @@ EFI_STATUS EFIAPI UefiMain(IN EFI_HANDLE ImageHandle, IN EFI_SYSTEM_TABLE *Syste
     return EFI_DEVICE_ERROR;
 }
 
-// Boot wrapper functions for menu integration
+// Boot wrapper implementations
 EFI_STATUS boot_linux_kernel_wrapper(void) {
     return linux_load_kernel("/boot/vmlinuz", "/boot/initrd.img", "root=/dev/sda1 ro");
 }
@@ -235,7 +280,7 @@ EFI_STATUS boot_recovery_shell_wrapper(void) {
     return shell_start();
 }
 
-EFI_STATUS boot_uefi_shell_wrapper(void) {
+EFI_STATUS boot_uefi_shell_wrapper(EFI_HANDLE ImageHandle) {
     return gBS->StartImage(ImageHandle, NULL, NULL);
 }
 
