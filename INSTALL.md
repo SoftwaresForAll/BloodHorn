@@ -47,12 +47,34 @@ brew install gcc nasm qemu mtools
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/bloodhorn.git
-cd bloodhorn
+git clone https://github.com/Listedroot/BloodHorn.git
+cd BloodHorn
 
-# Build all versions
-make all
+# Install dependencies (Ubuntu/Debian example)
+sudo apt update
+sudo apt install -y build-essential uuid-dev nasm acpica-tools \
+    python3-full qemu-system-x86 ovmf git gcc-aarch64-linux-gnu \
+    gcc-riscv64-linux-gnu
 
+# Clone and set up EDK2
+git clone --depth 1 https://github.com/tianocore/edk2.git
+cd edk2
+git submodule update --init
+make -C BaseTools
+
+export EDK_TOOLS_PATH=$(pwd)/BaseTools
+export PACKAGES_PATH=$(pwd):$(pwd)/..
+. edksetup.sh
+
+# Copy and build BloodHorn
+cp -r ../BloodHorn .
+build -a X64 -p BloodHorn.dsc -t GCC5
+
+# Create bootable ISO
+mkdir -p output/EFI/BOOT
+cp Build/BloodHorn/DEBUG_GCC5/X64/BloodHorn.efi output/EFI/BOOT/BOOTX64.EFI
+xorriso -as mkisofs -e EFI/BOOT/BOOTX64.EFI -no-emul-boot -o ../BloodHorn.iso output/
+cd ..
 # Verify build
 ls -la build/
 # Should show:
@@ -65,17 +87,16 @@ ls -la build/
 ### Build Options
 
 ```bash
-# Build only UEFI version
-make uefi
+# Build UEFI version (from edk2 directory)
+build -a X64 -p BloodHorn.dsc -t GCC5
 
-# Build only BIOS version
-make bios
-
-# Build bootable ISO
-make iso
+# Create bootable ISO
+mkdir -p output/EFI/BOOT
+cp Build/BloodHorn/DEBUG_GCC5/X64/BloodHorn.efi output/EFI/BOOT/BOOTX64.EFI
+xorriso -as mkisofs -e EFI/BOOT/BOOTX64.EFI -no-emul-boot -o BloodHorn.iso output/
 
 # Clean build artifacts
-make clean
+rm -rf Build/* output/ BloodHorn.iso
 ```
 
 ## UEFI Installation

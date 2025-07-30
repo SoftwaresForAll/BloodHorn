@@ -5,9 +5,9 @@
 After building BloodHorn (see INSTALL.md for build instructions), you can use the bootloader as follows:
 
 ### 1. Install the Binary
-- For UEFI: Copy `build/BloodHorn.efi` to your EFI system partition (e.g., `/boot/efi/EFI/BloodHorn/BloodHorn.efi`).
-- For BIOS: Write `build/bios/bootsector.bin` and `build/bios/stage2.bin` to your disk's MBR and next sector.
-- For ISO/USB: Write `iso/BloodHorn.iso` to a USB drive or CD.
+- For UEFI: Copy `edk2/BloodHorn.efi` to your EFI system partition (e.g., `/boot/efi/EFI/BloodHorn/BloodHorn.efi`).
+- For BIOS: Write `bios/bootsector.bin` and `bios/stage2.bin` to your disk's MBR and next sector.
+- For ISO/USB: Write `BloodHorn.iso` from the project root to a USB drive or CD.
 
 ### 2. Configure the Bootloader
 - Place `bloodhorn.ini` or `bloodhorn.json` in the root of your boot partition (e.g., `/boot/`, `/mnt/usb/`, or EFI partition root).

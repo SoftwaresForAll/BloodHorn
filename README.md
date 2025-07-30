@@ -19,15 +19,37 @@ BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and m
 - Python 3.6+
 
 ## Quick Build
+
+### Prerequisites
 ```bash
-# BIOS version
-make bios
+# Install build dependencies (Ubuntu/Debian)
+sudo apt update
+sudo apt install -y build-essential uuid-dev nasm acpica-tools \
+    python3-full qemu-system-x86 ovmf git gcc-aarch64-linux-gnu \
+    gcc-riscv64-linux-gnu
+```
 
-# UEFI version (requires EDK2)
-make uefi
+### Building with EDK2
+```bash
+# Clone EDK2
+git clone --depth 1 https://github.com/tianocore/edk2.git
+cd edk2
+git submodule update --init
 
-# Test in QEMU
-make test-bios  # or test-uefi
+# Build base tools
+make -C BaseTools
+
+# Set up environment
+export EDK_TOOLS_PATH=$(pwd)/BaseTools
+export PACKAGES_PATH=$(pwd):$(pwd)/..
+. edksetup.sh
+
+# Build BloodHorn (from the repository root)
+cp -r ../BloodHorn .
+build -a X64 -p BloodHorn.dsc -t GCC5
+
+# Run in QEMU
+qemu-system-x86_64 -bios /usr/share/ovmf/OVMF.fd -cdrom BloodHorn.iso
 ```
 
 ## Features
