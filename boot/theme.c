@@ -10,11 +10,10 @@ static struct BootMenuTheme current_theme = {
     .footer_color = 0x8888AA,
     .background_image = NULL
 };
-
+// ehhhh string.h and etc don't work in these stages of booting. no libc. no native header. but don't worry. my compat.h will handle this
 void SetBootMenuTheme(const struct BootMenuTheme* theme) {
     memcpy(&current_theme, theme, sizeof(struct BootMenuTheme));
 }
-
 const struct BootMenuTheme* GetBootMenuTheme(void) {
     return &current_theme;
 } 

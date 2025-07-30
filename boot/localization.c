@@ -11,19 +11,23 @@ static const struct { const char* key; const wchar_t* en; const wchar_t* es; } t
     {NULL, NULL, NULL}
 };
 
-static const wchar_t* current_lang = L"en";
+static const char* current_lang = "en";
 
 void SetLanguage(const char* lang_code) {
-    if (strcmp(lang_code, "es") == 0) current_lang = L"es";
-    else current_lang = L"en";
+    if (strcmp(lang_code, "es") == 0)
+        current_lang = "es";
+    else
+        current_lang = "en";
 }
 
 const wchar_t* GetLocalizedString(const char* key) {
-    for (int i = 0; table[i].key; ++i) {
+    for (int i = 0; table[i].key != NULL; ++i) {
         if (strcmp(table[i].key, key) == 0) {
-            if (current_lang == L"es") return table[i].es;
-            return table[i].en;
+            if (strcmp(current_lang, "es") == 0)
+                return table[i].es;
+            else
+                return table[i].en;
         }
     }
     return L"";
-} 
+}

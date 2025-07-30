@@ -16,6 +16,21 @@
 #include "../config/config_json.h"
 #include "../config/config_env.h"
 
+// what the FUCK! NOT POSSIBLE BABY IM C GOD
+// but you gotta admit one thing. THAT UR SMART !!!
+// yes and that im the absoulute best at assembly
+// ITS TRUE! i lost a brain cell while hearing this but i belive in u, lol
+// btw do we keep the comments? just for the entertaiment of users? eh ppl don't want code they want effectivness so keep it
+// say smth to the future people that are looking at this
+// if you want to be good at your life. just be a dev and suffer
+// did half life 3 release?  AND DID PORTAL 3 RELEASE??
+// yea u reminded me
+// yea that was it
+// BTW people are thinking this is one person talking to himself
+// a simple note. this is called vscode liveshare . AND IM NOT Autistic so please chill
+// anyways bro quick commit and push cuz im gonan go afk for awhile
+// SKADOOOOOOOOOOOSSH!
+
 #define MAX_BOOT_ENTRIES 128
 #define MAX_ENTRY_LENGTH 64
 #define VISIBLE_MENU_ENTRIES 10
@@ -281,7 +296,6 @@ PrintXY(
 ) {
     VA_LIST Args;
     CHAR16 Buffer[256];
-    UINTN StrSize;
     
     // Format the string
     VA_START(Args, Format);
@@ -289,24 +303,19 @@ PrintXY(
     VA_END(Args);
     
     // Set cursor position
-    gST->ConOut->SetCursorPosition(gST->ConOut, X, Y);
+    gST->ConOut->SetCursorPosition(gST->ConOut, (UINTN)X, (UINTN)Y);
     
-    // Set text attributes
-    gST->ConOut->SetAttribute(
-        gST->ConOut,
-        EFI_TEXT_ATTR(
-            (FgColor & 0x0000FF) >> 4,  // R
-            (FgColor & 0x00FF00) >> 8,  // G
-            (FgColor & 0xFF0000) >> 16, // B
-            (BgColor & 0x0000FF) >> 4,  // R
-            (BgColor & 0x00FF00) >> 8,  // G
-            (BgColor & 0xFF0000) >> 16  // B
-        )
-    );
+    // Map 0xRRGGBB to EFI colors (basic 16 colors, best effort)
+    // Using only intensity and basic colors (not true RGB)
+    UINT8 fg = EFI_LIGHTGRAY;
+    UINT8 bg = EFI_BLACK;
+    // You can improve color mapping here if needed
+    
+    gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(fg, bg));
     
     // Print the string
     gST->ConOut->OutputString(gST->ConOut, Buffer);
     
-    // Reset text attributes
+    // Reset to default colors (white on black)
     gST->ConOut->SetAttribute(gST->ConOut, EFI_TEXT_ATTR(EFI_WHITE, EFI_BLACK));
 }

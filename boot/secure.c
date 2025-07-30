@@ -8,9 +8,8 @@
 #include <Protocol/ImageAuthentication.h>
 #include <Guid/ImageAuthentication.h>
 #include <Guid/GlobalVariable.h>
-#include <Library/BaseCryptLib.h>
 
-EFI_STATUS VerifyImageSignature(
+EFI_STATUS EFIAPI VerifyImageSignature(
     IN CONST VOID    *ImageBuffer,
     IN UINTN         ImageSize,
     IN CONST UINT8   *PublicKey,
@@ -28,7 +27,7 @@ EFI_STATUS VerifyImageSignature(
     return EFI_SUCCESS;
 }
 
-BOOLEAN IsSecureBootEnabled() {
+BOOLEAN EFIAPI IsSecureBootEnabled(VOID) {
     EFI_STATUS Status;
     UINT8 SecureBoot = 0;
     UINTN DataSize = sizeof(SecureBoot);
@@ -36,7 +35,7 @@ BOOLEAN IsSecureBootEnabled() {
     return !EFI_ERROR(Status) && (SecureBoot == 1);
 }
 
-EFI_STATUS LoadAndVerifyKernel(
+EFI_STATUS EFIAPI LoadAndVerifyKernel(
     IN  CHAR16  *FileName,
     OUT VOID    **ImageBuffer,
     OUT UINTN   *ImageSize
@@ -66,7 +65,7 @@ EFI_STATUS LoadAndVerifyKernel(
     return EFI_SUCCESS;
 }
 
-EFI_STATUS ExecuteKernel(
+EFI_STATUS EFIAPI ExecuteKernel(
     IN VOID     *ImageBuffer,
     IN UINTN    ImageSize,
     IN CHAR16   *CmdLine OPTIONAL

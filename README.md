@@ -125,7 +125,7 @@ BloodHorn does not release pre-built binaries. This is to ensure maximum securit
       <a href="https://github.com/unpopularopinionn">
         <img src="https://avatars.githubusercontent.com/unpopularopinionn" width="120px;" alt="Homie avatar"/>
         <br />
-        <sub><b>UnpopularOponion</b></sub>
+        <sub><b>UnpopularOpinion</b></sub>
       </a>
       <br />
       Main Team
