@@ -1,8 +1,9 @@
 #ifndef BLOODHORN_CONFIG_INI_H
 #define BLOODHORN_CONFIG_INI_H
-
+// i dont know if this is a good fix but fuck it
+// actually good enough.
 struct boot_menu_entry {
-    char section[128]; // i dont know if this is a good fix but fuck it
+    char section[128]; 
     char name[64];
     char path[128];
 };
