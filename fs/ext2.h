@@ -21,7 +21,7 @@ struct ext2_super_block {
     uint16_t   s_mnt_count;
     uint16_t   s_max_mnt_count;
     uint16_t   s_magic;
-    // ... (add more fields as needed)
+    // ... (add more fields as needed . ofc for the future)
 };
 
 #endif // BLOODHORN_EXT2_H 
