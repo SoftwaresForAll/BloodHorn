@@ -7,6 +7,7 @@ extern void* allocate_memory(uint32_t size);
 extern int load_file(const char* path, uint8_t** data, uint32_t* size);
 
 struct ia32_boot_params {
+    uint32_t flags; // idk is this good the debugger didnt complain i guess
     uint32_t mem_lower;
     uint32_t mem_upper;
     uint32_t boot_device;
@@ -99,8 +100,7 @@ int ia32_boot_multiboot1(uint8_t* kernel_data, uint32_t kernel_size, const char*
     
     info->mem_lower = 640;
     info->mem_upper = 0x7FE00;
-    info->flags = 0x00000001 | 0x00000004;
-    
+    info->flags = 0x00000001 | 0x00000004; //   
     if (cmdline && strlen(cmdline) > 0) {
         strcpy((char*)0x2000, cmdline);
         info->cmdline = 0x2000;

@@ -2,7 +2,7 @@
 #include "compat.h"
 #include <string.h>
 #include "limine.h"
-
+// go to line 65
 extern void* allocate_memory(uint32_t size);
 extern int load_file(const char* path, uint8_t** data, uint32_t* size);
 

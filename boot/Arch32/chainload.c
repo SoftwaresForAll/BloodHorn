@@ -3,7 +3,7 @@
 #include <string.h>
 #include "chainload.h"
 
-extern void read_sector(uint32_t lba, uint8_t* buf);
+extern int read_sector(uint32_t lba, uint8_t* buf); // made it an int cuz IT NEEDS A ARTHIMATIC TYPE U BUFFON
 extern int load_file(const char* path, uint8_t** data, uint32_t* size);
 
 struct mbr_partition {

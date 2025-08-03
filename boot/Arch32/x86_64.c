@@ -7,6 +7,7 @@ extern void* allocate_memory(uint32_t size);
 extern int load_file(const char* path, uint8_t** data, uint32_t* size);
 
 struct x86_64_boot_params {
+    uint64_t flags;
     uint64_t mem_lower;
     uint64_t mem_upper;
     uint64_t boot_device;

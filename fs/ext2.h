@@ -4,6 +4,7 @@
 #include "compat.h"
 
 struct ext2_super_block {
+    uint32_t s_inode_size;
     uint32_t   s_inodes_count;
     uint32_t   s_blocks_count;
     uint32_t   s_r_blocks_count;

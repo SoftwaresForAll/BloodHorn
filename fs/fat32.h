@@ -4,6 +4,7 @@
 #include "compat.h"
 
 struct fat32_bootsector {
+    uint32_t root_cluster;
     uint8_t jump[3];
     uint8_t oem[8];
     uint16_t bytes_per_sector;
