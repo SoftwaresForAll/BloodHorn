@@ -1,3 +1,9 @@
+/*
+ * BloodHorn Bootloader
+ *
+ * This file is part of BloodHorn and is licensed under the MIT License.
+ * See the root of the repository for license details.
+ */
 #include <Uefi.h>
 #include "compat.h"
 #include <Library/UefiLib.h>

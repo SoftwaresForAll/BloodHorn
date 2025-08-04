@@ -1,3 +1,9 @@
+/*
+ * BloodHorn Bootloader
+ *
+ * This file is part of BloodHorn and is licensed under the MIT License.
+ * See the root of the repository for license details.
+ */
 #include <stdint.h>
 #include "compat.h"
 #include <string.h>
@@ -77,20 +83,26 @@ int loongarch64_boot_linux(uint8_t* kernel_data, uint64_t kernel_size, const cha
         if (load_file(initrd_path, &initrd_data, &initrd_size32) == 0) {
             initrd_size = initrd_size32;
             initrd_addr = dtb_addr + 0x100000;
-            memcpy((void*)initrd_addr, initrd_data, initrd_size);
+            if (initrd_data && initrd_size > 0) {
+                memcpy((void*)initrd_addr, initrd_data, initrd_size);
+            }
         }
     }
-    
+
     uint64_t cmdline_addr = 0;
     uint64_t cmdline_size = 0;
     if (cmdline && strlen(cmdline) > 0) {
         cmdline_addr = initrd_addr + initrd_size + 0x1000;
         cmdline_size = strlen(cmdline) + 1;
-        strcpy((char*)cmdline_addr, cmdline);
+        // Use strncpy for buffer safety; assumes cmdline_addr points to a buffer of at least cmdline_size
+        strncpy((char*)cmdline_addr, cmdline, cmdline_size - 1);
+        ((char*)cmdline_addr)[cmdline_size - 1] = '\0';
     }
-    
-    memcpy((void*)kernel_load_addr, kernel_data, kernel_size);
-    
+
+    if (kernel_data && kernel_size > 0) {
+        memcpy((void*)kernel_load_addr, kernel_data, kernel_size);
+    }
+
     struct loongarch64_boot_params* params = (struct loongarch64_boot_params*)0x9000000000100000;
     memset(params, 0, sizeof(struct loongarch64_boot_params));
     
@@ -122,10 +134,14 @@ int loongarch64_boot_uefi(uint8_t* kernel_data, uint64_t kernel_size, const char
     if (cmdline && strlen(cmdline) > 0) {
         cmdline_addr = dtb_addr + 0x100000;
         cmdline_size = strlen(cmdline) + 1;
-        strcpy((char*)cmdline_addr, cmdline);
+        // Use strncpy for buffer safety; assumes cmdline_addr points to a buffer of at least cmdline_size
+        strncpy((char*)cmdline_addr, cmdline, cmdline_size - 1);
+        ((char*)cmdline_addr)[cmdline_size - 1] = '\0';
     }
-    
-    memcpy((void*)kernel_load_addr, kernel_data, kernel_size);
+
+    if (kernel_data && kernel_size > 0) {
+        memcpy((void*)kernel_load_addr, kernel_data, kernel_size);
+    }
     
     struct loongarch64_boot_params* params = (struct loongarch64_boot_params*)0x9000000000100000;
     memset(params, 0, sizeof(struct loongarch64_boot_params));

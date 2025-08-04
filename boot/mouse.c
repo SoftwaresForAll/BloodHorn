@@ -1,8 +1,14 @@
-#include "mouse.h"
-#include "compat.h"
-#include <Uefi.h>
-#include <Library/UefiBootServicesTableLib.h>
-#include <Protocol/SimplePointer.h>
+/*
+ * BloodHorn Bootloader
+ *
+ * This file is part of BloodHorn and is licensed under the MIT License.
+ * See the root of the repository for license details.
+/*
+ * BloodHorn Bootloader
+ *
+ * This file is part of BloodHorn and is licensed under the MIT License.
+ * See the root of the repository for license details.
+ */
 
 static EFI_SIMPLE_POINTER_PROTOCOL* SimplePointer = NULL;
 
