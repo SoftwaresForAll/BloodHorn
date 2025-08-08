@@ -94,7 +94,7 @@ int loongarch64_boot_linux(uint8_t* kernel_data, uint64_t kernel_size, const cha
     if (cmdline && strlen(cmdline) > 0) {
         cmdline_addr = initrd_addr + initrd_size + 0x1000;
         cmdline_size = strlen(cmdline) + 1;
-        // Use strncpy for buffer safety; assumes cmdline_addr points to a buffer of at least cmdline_size
+        // Use strncpy for buffer safety assumes cmdline_addr points to a buffer of at least cmdline_size
         strncpy((char*)cmdline_addr, cmdline, cmdline_size - 1);
         ((char*)cmdline_addr)[cmdline_size - 1] = '\0';
     }

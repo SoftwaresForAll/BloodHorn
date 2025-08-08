@@ -52,6 +52,118 @@ This guide explains how to use BloodHorn bootloader with different operating sys
 8. [Scripting](#scripting)
 9. [Recovery Mode](#recovery-mode)
 
+## BloodChain Boot Protocol
+
+BloodChain Boot Protocol (BCBP) is a modern, secure boot protocol designed for BloodHorn. It provides a rich set of features for kernel booting and system initialization.
+
+### Key Features
+
+- **Secure Boot Ready**: Supports secure boot and TPM measurements
+- **Rich Information**: Passes ACPI, SMBIOS, and framebuffer information to the kernel
+- **Module Support**: Multiple module types (kernel, initrd, ACPI, etc.)
+- **Flexible**: Works in both BIOS and UEFI environments
+- **Extensible**: Easy to add new features while maintaining backward compatibility
+
+### Booting with BloodChain
+
+1. **Prepare your kernel**:
+   - Your kernel must be compiled as an ELF executable
+   - The entry point should expect a pointer to the BCBP header in RDI (x86_64) or X0 (AArch64)
+   - The kernel should be position-independent or loaded at its preferred address (default: 1MB)
+
+2. **Boot entry configuration** (in `bloodhorn.ini` or `bloodhorn.json`):
+   ```ini
+   [bloodchain]
+   kernel = /boot/kernel.elf
+   initrd = /boot/initrd.img
+   cmdline = root=/dev/sda1 ro quiet
+   ```
+   or in JSON:
+   ```json
+   {
+     "bloodchain": {
+       "kernel": "/boot/kernel.elf",
+       "initrd": "/boot/initrd.img",
+       "cmdline": "root=/dev/sda1 ro quiet"
+     }
+   }
+   ```
+
+3. **Kernel Development** (minimal example):
+   ```c
+   #include <stdint.h>
+   #include "boot/Arch32/BloodChain/bloodchain.h"
+   
+   // Kernel entry point
+   void _start(struct bcbp_header *hdr) {
+       // Initialize console
+       // ...
+       
+       // Find kernel module
+       struct bcbp_module *kernel = bcbp_find_module(hdr, "kernel");
+       if (!kernel) {
+           // Handle error
+           return;
+       }
+       
+       // Get command line
+       const char *cmdline = kernel->cmdline ? (const char *)kernel->cmdline : "";
+       
+       // Continue booting...
+   }
+   ```
+
+### Accessing BCBP Information
+
+From your kernel, you can access various system information:
+
+```c
+// Access ACPI RSDP
+if (hdr->acpi_rsdp) {
+    // Parse ACPI tables
+}
+
+// Access SMBIOS tables
+if (hdr->smbios) {
+    // Parse SMBIOS tables
+}
+
+// Check secure boot status
+if (hdr->secure_boot) {
+    // Secure boot is enabled
+}
+
+// Check if running in 64-bit UEFI
+if (hdr->uefi_64bit) {
+    // 64-bit UEFI environment
+}
+
+// Iterate through all modules
+struct bcbp_module *mods = (struct bcbp_module *)hdr->modules;
+for (uint64_t i = 0; i < hdr->module_count; i++) {
+    const char *name = mods[i].name ? (const char *)mods[i].name : "unnamed";
+    // Process module...
+}
+```
+
+### Secure Boot and TPM
+
+BloodChain supports secure boot verification and TPM measurements:
+
+1. **Secure Boot**: The `secure_boot` flag indicates if secure boot is enabled
+2. **TPM Support**: The `tpm_available` flag indicates if TPM is present
+3. **Measurements**: The bootloader can be extended to perform TPM measurements
+
+### Debugging
+
+To debug BloodChain boot issues:
+
+1. Enable debug output in the bootloader
+2. Check the serial console output
+3. Verify the BCBP header is properly initialized
+4. Check that all required modules are loaded
+5. Verify memory addresses and alignment
+
 ## Basic Usage
 
 ### Starting BloodHorn

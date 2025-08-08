@@ -1,3 +1,4 @@
+
 # BloodHorn
 <p align="center">
   <img src="Zeak.png" alt="Project Logo" width="200">
@@ -13,16 +14,19 @@ BloodHorn is a modern bootloader supporting Linux, Multiboot, Limine, PXE, and m
 
 ---
 ## Build Requirements
-- GCC/Clang
+
+- GCC or Clang
 - NASM
 - EDK2 (for UEFI builds)
 - Python 3.6+
 
+## Security Notice
+**BloodHorn is a security-sensitive project. Always build from source and review code before use. Never trust pre-built binaries for bootloaders.**
+
 ## Quick Build
 
-### Prerequisites
+### Prerequisites (Ubuntu/Debian)
 ```bash
-# Install build dependencies (Ubuntu/Debian)
 sudo apt update
 sudo apt install -y build-essential uuid-dev nasm acpica-tools \
     python3-full qemu-system-x86 ovmf git gcc-aarch64-linux-gnu \
@@ -52,19 +56,16 @@ build -a X64 -p BloodHorn.dsc -t GCC5
 qemu-system-x86_64 -bios /usr/share/ovmf/OVMF.fd -cdrom BloodHorn.iso
 ```
 
+
 ## Features
+
 - Linux boot
 - Multiboot 1 & 2
-- Limine
+- Limine protocol
 - Chainloading
 - PXE network boot
-- FAT32
-- ext2
-- ISO9660
-- SHA256
-- RSA
-- AES
-- HMAC
+- FAT32, ext2, ISO9660 support
+- SHA256, RSA, AES, HMAC
 - Secure boot
 - Entropy source
 - Graphical menu (theming, background image, localization)
@@ -75,34 +76,46 @@ qemu-system-x86_64 -bios /usr/share/ovmf/OVMF.fd -cdrom BloodHorn.iso
 - Modular network stack (DHCP, TFTP, ARP)
 - Modular filesystem stack
 
+
 ## Architectures
+
 - IA-32 (x86)
 - x86-64
 - aarch64 (arm64)
 - riscv64
 - loongarch64
 
+
 ## Boot Protocols
+
 - Linux
 - Multiboot 1
 - Multiboot 2
 - [Limine](https://github.com/limine-bootloader/limine-protocol/blob/trunk/PROTOCOL.md)
+- [BloodChain](docs/BloodChain-Protocol.md) (Modern, secure boot protocol)
 - Chainloading
 - PXE
 
+
 ## Configuration
+
 - INI, JSON, and environment variable support
 - Theme and language options (see CONFIG.md)
 - Place config files in the root of the boot partition
 
+
 ## Quick Start
-```
+
+```bash
 make
 make test
 ```
 
+
 ## Why We Don't Provide Binaries
+
 BloodHorn does not release pre-built binaries. This is to ensure maximum security, transparency, and trust:
+
 - Building from source guarantees you know exactly what code is running on your system.
 - Bootloaders are highly security-sensitive; you should always verify and build your own binary.
 - Different systems and firmware may require different build options or configurations.
@@ -133,9 +146,16 @@ BloodHorn does not release pre-built binaries. This is to ensure maximum securit
   </tr>
 </table>
 
+
 See INSTALL.md and USAGE.md for build and usage instructions.
 
-#### *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun and to be used in my future operating systems!.*
+---
+
 ## License
-MIT
+
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+---
+
+#### *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun and to be used in my future operating systems!*
 
