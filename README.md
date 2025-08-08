@@ -92,7 +92,7 @@ qemu-system-x86_64 -bios /usr/share/ovmf/OVMF.fd -cdrom BloodHorn.iso
 - Multiboot 1
 - Multiboot 2
 - [Limine](https://github.com/limine-bootloader/limine-protocol/blob/trunk/PROTOCOL.md)
-- [BloodChain](docs/BloodChain-Protocol.md) (Modern, secure boot protocol)
+- [BloodChain](docs/BloodChain-Protocol.md) 
 - Chainloading
 - PXE
 
