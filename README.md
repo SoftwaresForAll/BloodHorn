@@ -126,10 +126,10 @@ BloodHorn does not release pre-built binaries. This is to ensure maximum securit
 <table>
   <tr>
     <td align="center">
-      <a href="https://github.com/Listedroot">
+      <a href="https://github.com/PacHashs">
         <img src="https://avatars.githubusercontent.com/Listedroot" width="120px;" alt="My avatar"/>
         <br />
-        <sub><b>Listedroot</b></sub>
+        <sub><b>PacHash</b></sub>
       </a>
       <br />
       Lead Developer 
