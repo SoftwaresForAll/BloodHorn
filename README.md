@@ -159,3 +159,18 @@ This project is licensed under the MIT License. See the LICENSE file for details
 
 #### *BloodHorn was inspired by modern bootloaders, but all code is original and written from scratch and it's made originally for fun and to be used in my future operating systems!*
 
+## Special Thanks
+
+We would like to extend our deepest gratitude to the organizations and communities that have significantly influenced, inspired, and supported the development of this project:
+
+* **[OSDev.org](https://wiki.osdev.org/Main_Page)** – For their comprehensive documentation and tutorials on low-level system programming, bootloader design, and operating system development. Your guides made complex concepts approachable and actionable.
+* **[GNU Project](https://www.gnu.org/)** – For providing essential free software tools, compilers, and libraries that make cross-platform development possible.
+* **[Linux Foundation](https://www.linuxfoundation.org/)** – For fostering an open-source ecosystem and for the invaluable resources on kernel development, boot processes, and system internals.
+* **[U-Boot Community](https://www.denx.de/wiki/U-Boot)** – For their work on one of the most widely used open-source bootloaders. The concepts and codebase serve as a reference for embedded bootloader design.
+* **[Intel Developer Zone](https://software.intel.com/)** – For providing documentation on x86 architecture, chipset manuals, and optimization techniques crucial for low-level programming.
+* **[ARM Developer](https://developer.arm.com/)** – For offering in-depth guides and resources for ARM architecture boot processes, which have been instrumental for cross-platform compatibility.
+* **[Stack Overflow](https://stackoverflow.com/)** – For being an invaluable community where countless bootloader, assembly, and system programming challenges were solved through shared knowledge.
+* **[The OSDev Community Forums](https://forum.osdev.org/)** – For discussions, peer reviews, and troubleshooting tips that helped refine this project from concept to implementation.
+* **[GitHub Open Source Contributors](https://github.com/)** – For inspiring modern coding practices and maintaining a culture of sharing knowledge, which allowed this bootloader project to thrive.
+
+We also acknowledge all **open-source developers** whose contributions, code samples, and documentation have indirectly made this project possible. Your dedication to the craft of software development drives innovation and education in the low-level programming space.
